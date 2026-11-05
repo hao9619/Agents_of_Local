@@ -1,0 +1,60 @@
+{
+  "date": "2026-11-05 Asia/Shanghai",
+  "context_length": 32768,
+  "processor": "100% GPU",
+  "model_size_reported": "4.1 GB",
+  "tool_responses": [
+    {
+      "model": "local-coder-4060",
+      "created_at": "2026-11-05T02:20:07.2309194Z",
+      "message": {
+        "role": "assistant",
+        "content": "",
+        "tool_calls": [
+          {
+            "id": "call_zb8ex3af",
+            "function": {
+              "index": 0,
+              "name": "deployment_probe",
+              "arguments": {
+                "token": "4060-check"
+              }
+            }
+          }
+        ]
+      },
+      "done": true,
+      "done_reason": "stop",
+      "total_duration": 6131494800,
+      "load_duration": 5110132200,
+      "prompt_eval_count": 293,
+      "prompt_eval_cached_count": 0,
+      "prompt_eval_duration": 295596000,
+      "eval_count": 31,
+      "eval_duration": 722374000
+    },
+    {
+      "model": "local-coder-4060",
+      "created_at": "2026-11-05T02:20:07.7511891Z",
+      "message": {
+        "role": "assistant",
+        "content": "The exact output string is: DEPLOYMENT_OK_4060"
+      },
+      "done": true,
+      "done_reason": "stop",
+      "total_duration": 507826100,
+      "load_duration": 2063300,
+      "prompt_eval_count": 346,
+      "prompt_eval_cached_count": 289,
+      "prompt_eval_duration": 137005000,
+      "eval_count": 16,
+      "eval_duration": 365512000
+    }
+  ],
+  "ide_retest": "pending",
+  "cause_token_counts": {
+    "system_message": 12909,
+    "tools": 1678,
+    "previous_context_length": 8192
+  }
+}

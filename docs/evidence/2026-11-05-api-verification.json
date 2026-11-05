@@ -1,0 +1,154 @@
+{
+  "verified_date": "2026-11-05 Asia/Shanghai",
+  "api": "http://127.0.0.1:11435",
+  "version": {
+    "version": "0.40.14"
+  },
+  "models": {
+    "models": [
+      {
+        "name": "local-coder-4060:latest",
+        "model": "local-coder-4060:latest",
+        "modified_at": "2026-11-05T09:39:40.1163788+08:00",
+        "size": 3324173970,
+        "digest": "7575f8aa56587dfcf825d001d8405e658ef863ad66f6d7e4c83953a0f17a830d",
+        "details": {
+          "parent_model": "qwen3.5:4b-q4_K_M",
+          "format": "gguf",
+          "family": "qwen35",
+          "families": [
+            "qwen35"
+          ],
+          "parameter_size": "4.2B",
+          "quantization_level": "Q4_K_M",
+          "context_length": 262144,
+          "embedding_length": 2560,
+          "runner": "llamacpp"
+        },
+        "capabilities": [
+          "completion",
+          "vision",
+          "tools",
+          "thinking"
+        ]
+      },
+      {
+        "name": "qwen3.5:4b-q4_K_M",
+        "model": "qwen3.5:4b-q4_K_M",
+        "modified_at": "2026-11-05T09:39:22.9096688+08:00",
+        "size": 3324173934,
+        "digest": "d8b0f5e9760cd1682034f292d7ef72ec46f432149be0df7574bf2d6e92e38c04",
+        "details": {
+          "parent_model": "model.gguf",
+          "format": "gguf",
+          "family": "qwen35",
+          "families": [
+            "qwen35"
+          ],
+          "parameter_size": "4.2B",
+          "quantization_level": "Q4_K_M",
+          "context_length": 262144,
+          "embedding_length": 2560,
+          "runner": "llamacpp"
+        },
+        "capabilities": [
+          "completion",
+          "vision",
+          "tools",
+          "thinking"
+        ]
+      }
+    ]
+  },
+  "running": {
+    "models": [
+      {
+        "name": "local-coder-4060:latest",
+        "model": "local-coder-4060:latest",
+        "size": 3364911840,
+        "digest": "7575f8aa56587dfcf825d001d8405e658ef863ad66f6d7e4c83953a0f17a830d",
+        "details": {
+          "parent_model": "",
+          "format": "gguf",
+          "family": "qwen35",
+          "families": [
+            "qwen35"
+          ],
+          "parameter_size": "4.2B",
+          "quantization_level": "Q4_K_M"
+        },
+        "expires_at": "2026-11-05T09:45:25.2518378+08:00",
+        "size_vram": 3364911840,
+        "context_length": 8192,
+        "runner": "llamacpp"
+      }
+    ]
+  },
+  "basic_generation": {
+    "model": "local-coder-4060",
+    "created_at": "2026-11-05T01:40:25.2495527Z",
+    "message": {
+      "role": "assistant",
+      "content": "在 Python 中定义函数非常简单，主要使用 `def` 关键字。基本语法如下：\n\n```python\ndef 函数名(参数列表):\n    \"\"\"函数的说明文档\"\"\"\n    函数体（执行代码）\n    return 返回值  # 可选，用于返回结果\n```\n\n**示例：**\n\n```python\n# 定义一个加法函数\ndef add(a, b):\n    \"\"\"计算两个数的和\"\"\"\n    result = a + b\n    return result\n\n# 调用函数\nprint(add(3, 5))  # 输出：8\n```\n\n**关键点说明：**\n- `def`：用于开始定义函数。\n- `函数名`：自定义名称，遵循命名规范（如小写字母加下划线）。\n- `参数列表`：放在括号内，可以是多个参数，用逗号分隔。\n- `return`：可选，用于返回计算结果；若无 `return`，函数默认返回 `None`。\n- 缩进：函数体内的代码必须正确缩进（通常 4 个空格）。\n\n这样定义的函数可以重复使用，并让代码更清晰、模块化。"
+    },
+    "done": true,
+    "done_reason": "stop",
+    "total_duration": 11999062900,
+    "load_duration": 38713800,
+    "prompt_eval_count": 22,
+    "prompt_eval_cached_count": 0,
+    "prompt_eval_duration": 742658000,
+    "eval_count": 245,
+    "eval_duration": 10910317000
+  },
+  "tool_round_trip": "PASS; exact output DEPLOYMENT_OK_4060",
+  "ide_file_edit": "not verified",
+  "tool_responses": [
+    {
+      "model": "local-coder-4060",
+      "created_at": "2026-11-05T01:39:47.2907282Z",
+      "message": {
+        "role": "assistant",
+        "content": "",
+        "tool_calls": [
+          {
+            "id": "call_0uqc0tsu",
+            "function": {
+              "index": 0,
+              "name": "deployment_probe",
+              "arguments": {
+                "token": "4060-check"
+              }
+            }
+          }
+        ]
+      },
+      "done": true,
+      "done_reason": "stop",
+      "total_duration": 6931258500,
+      "load_duration": 5830368700,
+      "prompt_eval_count": 293,
+      "prompt_eval_cached_count": 0,
+      "prompt_eval_duration": 345960000,
+      "eval_count": 31,
+      "eval_duration": 747744000
+    },
+    {
+      "model": "local-coder-4060",
+      "created_at": "2026-11-05T01:39:47.8746458Z",
+      "message": {
+        "role": "assistant",
+        "content": "The exact output string is: DEPLOYMENT_OK_4060"
+      },
+      "done": true,
+      "done_reason": "stop",
+      "total_duration": 570634500,
+      "load_duration": 4036600,
+      "prompt_eval_count": 346,
+      "prompt_eval_cached_count": 289,
+      "prompt_eval_duration": 161004000,
+      "eval_count": 16,
+      "eval_duration": 398439000
+    }
+  ]
+}
