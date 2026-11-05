@@ -39,7 +39,7 @@ flowchart LR
 | 运行环境 | Ollama `0.40.14` · Continue `2.0.0` |
 | 基础模型 | `qwen3.5:4b-q4_K_M` |
 | 本地模型别名 | `local-coder-4060` |
-| 当前参数 | **32K 上下文** · 最多输出 2048 tokens · 温度 0.2 |
+| 当前参数 | **32K 上下文** · 最多输出 8192 tokens · 温度 0.2 |
 | GPU 验证 | `100% GPU`，32K 配置下模型占用约 **4.1GB** |
 | API 验证 | 中文生成、工具调用、工具结果回传均通过 |
 | 编辑器验证 | Continue 面板、模型选择及双侧栏布局已确认；受控的读写文件验收仍待完成 |
@@ -136,7 +136,7 @@ GPU 分配以实际输出的 `PROCESSOR` 为准，当前配置的 `CONTEXT` 应�
 
 ```text
 PARAMETER num_ctx 32768
-PARAMETER num_predict 2048
+PARAMETER num_predict 8192
 PARAMETER temperature 0.2
 ```
 
@@ -244,3 +244,31 @@ python .\scripts\download-model.py
 🖥️ **本机运行 · 🔍 按需读取 · 🛠️ 逐步定制**
 
 </div>
+
+### 生成停在思考或 HTML 不完整
+
+同类鹈鹕动画请求的 API 对照在开启思考、num_predict=2048 时以 done_reason=length 结束，HTML 缺少结束标签。当前 RTX 配置的输出上限改为 8192，Continue 默认 reasoning=false；界面思考开关可能覆盖默认值，新会话中确认关闭后重试。思考、正文及工具参数均占用生成额度。API 对照不等于复现了 IDE 完全空白的全部原因，也不代表已验证实际文件创建或动画效果。
+
+对照结果：[生成额度证据](docs/evidence/2026-11-05-generation-budget.json)。调整后同类 API 请求在约 56 秒后正常 stop，生成 2241 tokens / 5897 字符，包含 HTML 结束标签，无思考输出；未创建或渲染文件，IDE 内创建文件仍需重试。项目 11435 服务已为此次诊断重新启动，日志在 `.local/logs/ollama-diagnostic.*.log`。
+
+### 思考按钮不显示
+
+已核对本机 Continue 2.0.0：按钮由模型名称及 completionOptions.reasoning 决定。自定义别名 local-coder-4060 不在名称识别规则中；显式 reasoning=false 时按钮也会隐藏。因此无按钮不表示用户漏找。当前通过用户配置的 defaultCompletionOptions.reasoning=false 关闭思考；需要开启时改为 true，再核对请求行为和输出预算。
+
+### 模型声称不能新建文件
+
+已定位的一次会话中，模型臆造了 mkdir、write_file 工具名，插件返回 Tool not found。Continue 自带的新建文件工具是 create_new_file，参数 filepath、contents；本机工具已启用，策略为 Ask First。提示词中的“无需确认”不改变插件策略，实际调用时需批准工具卡片。
+
+已添加活动规则 `.continue/rules/tool-use.md`，复用模板见 [文件工具规则](continue/rules/tool-use.md)。它要求使用实际提供的工具、按 schema 传参，并区分权限错误与名称错误。规则不是模型正确率保证；实际写入仍待验证。诊断证据见 [工具错误记录](docs/evidence/2026-11-05-file-tool-diagnosis.json)。用户已自行将实际配置调整为 96K 上下文、16384 输出、开启思考，此次未覆盖；仓库基础模板保持此前数值。
+
+### 鹈鹕任务的实际产物检查
+
+后续已观察到正确的 create_new_file 调用及已落盘文件，但 index.html 内容偏离动画要求，早期 test.html 的 SVG 结构与骑行动画也有明显问题。审批按钮来自 Ask First，并非缺失写入功能。详见 [产物与工具检查](docs/2026-11-05-pelican-review.md)。此次未人工修改作品或改变工具策略。
+
+### 文件存在时无法改写
+
+会话日志显示模型在文件存在时继续调用 create_new_file，收到明确错误后又调用不存在的 write_file。已补充活动规则及可复用模板：先 read_file，再使用实际可用的 single_find_and_replace（filepath、old_string、new_string）或 edit_existing_file（filepath、changes）；不通过删除重建绕过。工具策略需在 Continue 工具列表中另行核对，规则不能启用已排除的工具。此次没有改动用户 HTML；正确编辑的端到端结果仍待验证。
+
+## 🎨 本地模型绘图优化结果
+
+2026-11-05 完成11轮本地Qwen3.5 4B实验后，按用户要求仅保留最佳结果及其复现信息：[推荐HTML](鹈鹕测试/推荐结果.html)、[配置参数](鹈鹕测试/配置.json)、[实际提示词](鹈鹕测试/提示词.md)。最佳产物来自第8轮完整生成加第9轮模型局部修订；配置保存模型摘要、两阶段参数、实际修订和结果哈希，提示词保留完整消息。其余作品、截图、实验脚本、报告和该目录临时协作入口已清理；本目录继承根协作规则。未修改用户Continue全局配置，未人工绘制替代模型结果，未由Agent暂存、提交或推送。

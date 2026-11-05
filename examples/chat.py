@@ -19,7 +19,7 @@ if __name__ == '__main__':
     sys.stdout.reconfigure(encoding='utf-8')
     checking = '--check' in sys.argv
     payload = {'model': MODEL, 'stream': False, 'think': False,
-               'options': {'num_ctx': 32768, 'num_predict': 2048, 'temperature': 0.2},
+               'options': {'num_ctx': 32768, 'num_predict': 8192, 'temperature': 0.2},
                'messages': [{'role': 'user', 'content': '用中文简短介绍你自己。'}]}
     if checking:
         print(json.dumps(request('/api/version')))

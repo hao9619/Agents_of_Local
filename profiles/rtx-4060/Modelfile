@@ -1,6 +1,6 @@
 FROM qwen3.5:4b-q4_K_M
 # 实际分配的上下文；调整后重新运行 setup.ps1。
 PARAMETER num_ctx 32768
-PARAMETER num_predict 2048
+PARAMETER num_predict 8192
 PARAMETER temperature 0.2
 

@@ -1,0 +1,89 @@
+{
+  "说明": "最佳结果不是单次生成：第8轮完整HTML + 第9轮本地模型生成的3处精确修订。提示词.md保存两阶段完整消息顺序，含当时上文及输入HTML。应用edits必须逐项精确匹配一次。",
+  "日期": "2026-11-05",
+  "api": "http://127.0.0.1:11435/api/chat",
+  "ollama_version": "0.40.14",
+  "model": "local-coder-4060",
+  "model_digest": "8d489135e9e913f221493ac19fb045d7580427f8cbfd2d6c6b533e7be607dbe2",
+  "结果文件": "推荐结果.html",
+  "sha256": "00c3c1ead62baaa5c7910fbc5a4f8d227bdaa621d7f71a0332d4cf94198147d7",
+  "stages": [
+    {
+      "name": "完整生成",
+      "source_round": 8,
+      "request_parameters": {
+        "model": "local-coder-4060",
+        "stream": false,
+        "think": false,
+        "options": {
+          "num_ctx": 16384,
+          "num_predict": 8192,
+          "temperature": 0.6,
+          "seed": 42
+        }
+      },
+      "messages": "提示词.md 第一阶段"
+    },
+    {
+      "name": "局部精确修订",
+      "source_round": 9,
+      "request_parameters": {
+        "model": "local-coder-4060",
+        "stream": false,
+        "think": false,
+        "format": {
+          "type": "object",
+          "properties": {
+            "edits": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 5,
+              "items": {
+                "type": "object",
+                "properties": {
+                  "old": {
+                    "type": "string"
+                  },
+                  "new": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "old",
+                  "new"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "edits"
+          ],
+          "additionalProperties": false
+        },
+        "options": {
+          "num_ctx": 16384,
+          "num_predict": 4096,
+          "temperature": 0.2,
+          "seed": 42
+        }
+      },
+      "messages": "提示词.md 第二阶段",
+      "applied_model_edits": [
+        {
+          "old": "<g id=\"rearSpokes\" stroke-width=\"2\">",
+          "new": "<g id=\"rearSpokes\" stroke-width=\"2\" stroke=\"#526878\" fill=\"none\">"
+        },
+        {
+          "old": "<g id=\"frontSpokes\" stroke-width=\"2\">",
+          "new": "<g id=\"frontSpokes\" stroke-width=\"2\" stroke=\"#526878\" fill=\"none\">"
+        },
+        {
+          "old": "<!-- Handlebars & Stem -->\n        <path d=\"M 580,295 Q 600,270 600,285\" fill=\"none\" stroke=\"#263A46\" stroke-width=\"8\" stroke-linecap=\"round\" />",
+          "new": "<!-- Handlebars & Stem -->\n        <line x1=\"555\" y1=\"330\" x2=\"580\" y2=\"295\" stroke=\"#263A46\" stroke-width=\"6\" stroke-linecap=\"round\" />\n        <path d=\"M 580,295 Q 600,270 600,285\" fill=\"none\" stroke=\"#263A46\" stroke-width=\"8\" stroke-linecap=\"round\" />"
+        }
+      ]
+    }
+  ],
+  "复现边界": "原始提示和实际参数已保留；不同运行环境下即使固定种子也可能不同。保留的HTML为本次实际最佳产物，未手工修补。"
+}

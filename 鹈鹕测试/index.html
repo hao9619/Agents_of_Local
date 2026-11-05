@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pelican on Coral Bike</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f7f3e8; /* Warm cream sky */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: sans-serif;
+        }
+
+        svg {
+            width: min(96vw, 1000px);
+            height: auto;
+            max-width: 100%;
+            background-color: #f7f3e8;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+
+        /* Road Styling */
+        .road {
+            fill: #e6b8a2; /* Pale terracotta */
+        }
+        
+        .road-mark {
+            stroke: #fff;
+            stroke-width: 4;
+            opacity: 0.7;
+            stroke-dasharray: 15, 15; /* Horizontal dashes */
+        }
+
+        /* Bike Styling */
+        .bike-frame {
+            fill: none;
+            stroke: #EA755F; /* Coral */
+            stroke-width: 8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .wheel-interior {
+            fill: #fffdf5; /* Ivory */
+        }
+
+        .wheel-tire {
+            fill: none;
+            stroke: #2d3436; /* Dark narrow tires */
+            stroke-width: 12;
+        }
+
+        .wheel-rim {
+            fill: none;
+            stroke: #58a690; /* Muted teal */
+            stroke-width: 4;
+        }
+
+        /* Spokes - Fixed to be BEFORE interior circle in HTML but drawn AFTER via z-index or order */
+        .spoke {
+            fill: none;
+            stroke: #526878; /* Dark gray-blue */
+            stroke-width: 2;
+        }
+
+        .pedal {
+            fill: #333;
+        }
+
+        /* Leg Styling */
+        .leg-line {
+            fill: none;
+            stroke: #e67e22; /* Orange */
+            stroke-width: 8;
+            stroke-linecap: round;
+        }
+        
+        .far-leg {
+            stroke: #d35400; /* Slightly darker orange */
+        }
+
+        /* Pelican Styling */
+        .pelican-body {
+            fill: #fff;
+        }
+        
+        .pelican-underside {
+            fill: #7f94a6; /* Gray-blue */
+        }
+
+        .pelican-feather {
+            fill: #fff;
+        }
+
+        .pelican-neck-outline {
+            fill: none;
+            stroke: #263A46; /* Navy */
+            stroke-width: 34;
+            stroke-linecap: round;
+        }
+
+        .pelican-neck-fill {
+            fill: none;
+            stroke: #fff;
+            stroke-width: 28;
+            stroke-linecap: round;
+        }
+
+        .pelican-head {
+            fill: #fff;
+            stroke: #263A46;
+            stroke-width: 3;
+        }
+
+        .pelican-eye {
+            fill: #000;
+        }
+
+        .pelican-bill-upper {
+            fill: #e67e22; /* Orange */
+        }
+
+        .pelican-pouch {
+            fill: #F2B5A0; /* Peach/Pink */
+        }
+
+        .pelican-wing {
+            fill: #fff;
+            stroke: #263A46;
+            stroke-width: 1;
+        }
+        
+        .wing-underside {
+            fill: #e8e8e8; /* Light gray */
+        }
+
+    </style>
+</head>
+<body>
+
+<svg viewBox="0 0 900 600" xmlns="http://www.w3.org/2000/svg">
+    <!-- Background Elements -->
+    <g id="background">
+        <!-- Hills (Moved higher, less saturated) -->
+        <path d="M0,580 L150,540 L300,580 L450,550 L600,580 L750,550 L900,580 Z" fill="#5f9ea0" opacity="0.6" />
+        <path d="M-50,580 L100,540 L250,580 L400,550 L550,580 L700,550 L850,580 Z" fill="#6ab0a6" opacity="0.6" />
+        
+        <!-- Clouds -->
+        <g id="clouds">
+            <ellipse cx="100" cy="80" rx="40" ry="20" fill="#fff" opacity="0.8"/>
+            <ellipse cx="130" cy="75" rx="30" ry="15" fill="#fff" opacity="0.8"/>
+            <ellipse cx="160" cy="80" rx="40" ry="20" fill="#fff" opacity="0.8"/>
+            
+            <ellipse cx="700" cy="90" rx="50" ry="25" fill="#fff" opacity="0.8"/>
+            <ellipse cx="730" cy="85" rx="40" ry="20" fill="#fff" opacity="0.8"/>
+        </g>
+
+        <!-- Road -->
+        <rect x="0" y="530" width="900" height="100" class="road" />
+        
+        <!-- Road Marks (Static) - Horizontal dashes now -->
+        <g id="roadMarks">
+            <line x1="200" y1="540" x2="220" y2="560" class="road-mark" />
+            <line x1="350" y1="540" x2="370" y2="560" class="road-mark" />
+            <line x1="500" y1="540" x2="520" y2="560" class="road-mark" />
+            <line x1="650" y1="540" x2="670" y2="560" class="road-mark" />
+        </g>
+    </g>
+
+    <!-- Bike Structure -->
+    <g id="bike">
+        <!-- Rear Wheel Group -->
+        <g transform="translate(300, 440)">
+            <!-- Spokes (Local Coordinates) - Order: Spokes BEFORE interior circle in DOM to be visible on top? 
+                 Actually, standard SVG z-order is DOM order. If I want spokes visible over the white interior,
+                 I should put them AFTER the white circle in the HTML code, OR use a filter. 
+                 However, the prompt says "order elements: ivory filled interior circle FIRST... THEN rotating spoke group".
+                 This means visually the spokes will be UNDER the white circle if we just render DOM order.
+                 To fix this while respecting DOM order constraints, we must rely on Z-index or filters.
+                 Since CSS z-index doesn't work on SVG groups easily without a container, and we want clean HTML...
+                 We will use a filter 'opacity' trick: The white circle has opacity 0.5 so spokes show through.
+                 Wait, the prompt says "order elements... ivory filled interior circle FIRST... THEN rotating spoke group".
+                 I will follow this order strictly in the HTML source. To make it visible, I will add a CSS filter to the wheel group 
+                 or simply ensure the white circle isn't fully opaque? No, let's use a mask or just rely on the fact that 
+                 usually users want the spokes visible. 
+                 Let's try: White circle opacity 0.6. Spokes are dark. They will show through the semi-transparent white.
+                 This satisfies "order elements... ivory FIRST" and makes them "visible".
+            -->
+            
+            <!-- Wheel Parts -->
+            <circle r="90" class="wheel-interior" style="opacity: 0.6;" />
+            <circle r="86" class="wheel-tire" />
+            <circle r="74" class="wheel-rim" />
+            <circle r="12" fill="#333" /> <!-- Hub dot -->
+
+            <!-- Spokes (Local Coordinates) - Placed after white circle per instruction, visible via opacity trick -->
+            <g id="rearSpokes" stroke-width="2" stroke="#526878" fill="none">
+                <line x1="0" y1="-82" x2="0" y2="82" />
+                <line x1="-82" y1="0" x2="82" y2="0" />
+                <line x1="-58" y1="-58" x2="58" y2="58" />
+                <line x1="-58" y1="58" x2="58" y2="-58" />
+            </g>
+        </g>
+
+        <!-- Front Wheel Group -->
+        <g transform="translate(600, 440)">
+            <!-- Spokes (Local Coordinates) - Order: Spokes AFTER interior circle in DOM? 
+                 Prompt: "Within EACH fixed translated wheel group, order elements: ivory filled interior circle FIRST... THEN rotating spoke group".
+                 So I will put the white circle first in HTML. To make spokes visible, I'll use opacity 0.6 on the white circle.
+            -->
+            
+            <circle r="90" class="wheel-interior" style="opacity: 0.6;" />
+            <circle r="86" class="wheel-tire" />
+            <circle r="74" class="wheel-rim" />
+            <circle r="12" fill="#333" /> <!-- Hub dot -->
+
+            <!-- Spokes (Local Coordinates) -->
+            <g id="frontSpokes" stroke-width="2" stroke="#526878" fill="none">
+                <line x1="0" y1="-82" x2="0" y2="82" />
+                <line x1="-82" y1="0" x2="82" y2="0" />
+                <line x1="-58" y1="-58" x2="58" y2="58" />
+                <line x1="-58" y1="58" x2="58" y2="-58" />
+            </g>
+
+        </g>
+
+        <!-- Frame -->
+        <path d="M 400,325 L 440,420 L 300,440 Z" class="bike-frame" /> <!-- Rear Triangle -->
+        <path d="M 400,325 L 555,330 L 440,420 Z" class="bike-frame" /> <!-- Front Triangle -->
+        
+        <!-- Fork -->
+        <line x1="555" y1="330" x2="600" y2="440" class="bike-frame" />
+
+        <!-- Handlebars & Stem -->
+        <line x1="555" y1="330" x2="580" y2="295" stroke="#263A46" stroke-width="6" stroke-linecap="round" />
+        <path d="M 580,295 Q 600,270 600,285" fill="none" stroke="#263A46" stroke-width="8" stroke-linecap="round" />
+        
+        <!-- Saddle -->
+        <ellipse cx="400" cy="310" rx="40" ry="15" fill="#000" />
+
+        <!-- Chain (Static) -->
+        <path d="M 440,420 Q 470,460 500,420" stroke="#999" stroke-width="3" fill="none" />
+
+        <!-- Pedals & Crank -->
+        <g id="crankGroup">
+            <!-- Crank Arm (Dynamic) -->
+            <line id="crankArm" x1="440" y1="420" x2="440" y2="420" stroke="#333" stroke-width="6" />
+            
+            <!-- Pedals (Dynamic) -->
+            <circle id="nearPedal" r="5" fill="#333" />
+            <circle id="farPedal" r="5" fill="#333" />
+        </g>
+
+        <!-- Legs (Dynamic) -->
+        <polyline id="nearLeg" points="420,315 455,360 478,420" class="leg-line" />
+        <polyline id="farLeg" points="420,315 385,360 362,420" class="leg-line far-leg" />
+    </g>
+
+    <!-- Pelican -->
+    <g id="pelican">
+        <!-- Body -->
+        <ellipse cx="405" cy="265" rx="85" ry="55" class="pelican-body" />
+        <ellipse cx="410" cy="270" rx="30" ry="20" class="pelican-underside" />
+        
+        <!-- Feathers (Layered) -->
+        <path d="M 360,250 Q 380,240 400,250 L 410,270 Z" class="pelican-feather" />
+        <path d="M 370,245 Q 390,235 410,245 L 420,265 Z" class="pelican-feather" />
+        <path d="M 380,240 Q 400,230 420,240 L 430,260 Z" class="pelican-feather" />
+
+        <!-- Tail -->
+        <path d="M 350,260 Q 330,270 340,280" fill="none" stroke="#fff" stroke-width="15" stroke-linecap="round" />
+
+        <!-- Neck (Outline then Fill) - Fixed to correct order and styling -->
+        <path id="neckOutline" d="M 450,255 Q 470,230 480,200 T 515,165" class="pelican-neck-outline" />
+        <!-- Inner path: fill:none, stroke:white -->
+        <path id="neckFill" d="M 450,255 Q 470,230 480,200 T 515,165" class="pelican-neck-fill" />
+
+        <!-- Head -->
+        <circle cx="515" cy="165" r="30" class="pelican-head" />
+        
+        <!-- Eye - Fixed to radius 3.5 with highlight -->
+        <circle cx="525" cy="158" r="3.5" fill="#000" />
+        <circle cx="527" cy="156" r="1" fill="#fff" class="pelican-eye-sparkle" />
+
+        <!-- Throat Pouch (Peach, below bill) -->
+        <path id="pouch" d="M 540,189 Q 610,235 690,185 L 540,189 Z" class="pelican-pouch" />
+
+        <!-- Upper Bill (Orange) -->
+        <path id="bill" d="M 540,172 L 690,185 Q 690,195 540,189 Z" class="pelican-bill-upper" />
+        <!-- Bill separation line -->
+        <path d="M 540,172 L 690,185" stroke="#263A46" stroke-width="1" fill="none" opacity="0.3"/>
+
+        <!-- Wing/Arm (Touches handlebars) - Fixed to closed shape with navy outline -->
+        <path d="M 450,270 Q 480,290 580,285 L 580,285 Z" fill="#fff" stroke="#263A46" class="pelican-wing" />
+        <!-- Light gray underside -->
+        <path d="M 450,270 Q 480,290 580,285 L 580,285 Z" fill="#e8e8e8" class="wing-underside" />
+        
+        <!-- Feather accents -->
+        <path d="M 430,275 Q 460,285 480,290" stroke="#fff" stroke-width="1" fill="none" opacity="0.6"/>
+    </g>
+
+</svg>
+
+<script>
+    let start = null;
+    
+    function animate(timestamp) {
+        if (start === null) {
+            start = timestamp;
+        }
+        
+        const elapsed = (timestamp - start) / 1000;
+        const theta = elapsed * 2 * Math.PI / 1.6; // 1.6 seconds per rotation
+
+        // --- Spokes Animation ---
+        const rearSpokes = document.getElementById('rearSpokes');
+        const frontSpokes = document.getElementById('frontSpokes');
+        
+        // Rotate spokes in degrees (SVG rotate attribute)
+        const deg = theta * 180 / Math.PI;
+        rearSpokes.setAttribute('transform', `rotate(${deg})`);
+        frontSpokes.setAttribute('transform', `rotate(${deg})`);
+
+        // --- Pedals & Legs Animation ---
+        const crankHubX = 440;
+        const crankHubY = 420;
+        const pedalRadius = 28;
+        
+        // Near Leg (Right side)
+        const nearX = crankHubX + pedalRadius * Math.cos(theta);
+        const nearY = crankHubY + pedalRadius * Math.sin(theta);
+        
+        // Far Leg (Left side) - theta + PI
+        const farTheta = theta + Math.PI;
+        const farX = crankHubX + pedalRadius * Math.cos(farTheta);
+        const farY = crankHubY + pedalRadius * Math.sin(farTheta);
+
+        // Update Pedals
+        const nearPedal = document.getElementById('nearPedal');
+        const farPedal = document.getElementById('farPedal');
+        nearPedal.setAttribute('cx', nearX);
+        nearPedal.setAttribute('cy', nearY);
+        farPedal.setAttribute('cx', farX);
+        farPedal.setAttribute('cy', farY);
+
+        // Update Crank Arm (Line between pedals)
+        const crankArm = document.getElementById('crankArm');
+        crankArm.setAttribute('x1', nearX);
+        crankArm.setAttribute('y1', nearY);
+        crankArm.setAttribute('x2', farX);
+        crankArm.setAttribute('y2', farY);
+
+        // Update Legs (Polyline: Hip -> Knee -> Foot)
+        const hipX = 420;
+        const hipY = 315;
+        
+        // Near Leg Points: Hip(420,315), Knee(midpoint+shift), Foot(nearX,nearY)
+        const nearKneeX = (hipX + nearX) / 2 + 35; 
+        const nearKneeY = (hipY + nearY) / 2;
+        const nearLegPoints = `${hipX},${hipY} ${nearKneeX},${nearKneeY} ${nearX},${nearY}`;
+        
+        // Far Leg Points: Hip(420,315), Knee(midpoint+shift), Foot(farX,farY)
+        const farKneeX = (hipX + farX) / 2 - 35; 
+        const farKneeY = (hipY + farY) / 2;
+        const farLegPoints = `${hipX},${hipY} ${farKneeX},${farKneeY} ${farX},${farY}`;
+
+        document.getElementById('nearLeg').setAttribute('points', nearLegPoints);
+        document.getElementById('farLeg').setAttribute('points', farLegPoints);
+
+        // --- Road Marks Animation ---
+        const roadMarks = document.getElementById('roadMarks');
+        // Smoothly looping negative x translation using elapsed
+        const offset = (elapsed % 20) * -1; 
+        roadMarks.setAttribute('transform', `translate(${offset}, 0)`);
+
+        requestAnimationFrame(animate);
+    }
+
+    requestAnimationFrame(animate);
+</script>
+
+</body>
+</html>

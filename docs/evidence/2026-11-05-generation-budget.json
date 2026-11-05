@@ -1,0 +1,33 @@
+{
+  "date": "2026-11-05 Asia/Shanghai",
+  "scope": "API comparison only; original IDE failure not fully reproduced; no HTML file created or rendered",
+  "before": {
+    "options": {
+      "think": true,
+      "num_predict": 2048
+    },
+    "result": {
+      "done_reason": "length",
+      "eval_count": 2048,
+      "total_duration": 50340718800,
+      "eval_duration": 46191636000,
+      "thinking_chars": 3535,
+      "content_chars": 3293,
+      "content_has_html_end": false
+    }
+  },
+  "after": {
+    "options": {
+      "think": false,
+      "num_predict": 8192
+    },
+    "result": {
+      "done_reason": "stop",
+      "eval_count": 2241,
+      "total_duration": 55801339900,
+      "thinking_chars": 0,
+      "content_chars": 5897,
+      "content_has_html_end": true
+    }
+  }
+}

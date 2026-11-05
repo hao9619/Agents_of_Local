@@ -1,0 +1,17 @@
+{
+  "date": "2026-11-05 Asia/Shanghai",
+  "observed_failures": [
+    "Tool mkdir not found",
+    "Tool write_file not found"
+  ],
+  "available_create_tool": {
+    "name": "create_new_file",
+    "required": [
+      "filepath",
+      "contents"
+    ],
+    "policy": "Ask First (observed in Continue UI)"
+  },
+  "change": "Added active workspace tool rule and reusable copy; preserved user 96K/16384/reasoning configuration",
+  "verification": "Rule YAML and reusable copy checked; actual file write through Continue not yet verified"
+}
