@@ -1,0 +1,5 @@
+FROM qwen3.5:9b-q4_K_M
+# 8GB 显存先按 8K 验证；Continue 必须使用相同上下文。
+PARAMETER num_ctx 8192
+PARAMETER num_predict 4096
+PARAMETER temperature 0.2

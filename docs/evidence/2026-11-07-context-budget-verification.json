@@ -1,0 +1,73 @@
+{
+  "entry": "MCP stdio",
+  "overflow": {
+    "status": "context_overflow",
+    "context": {
+      "context_window": 8192,
+      "output_reserved": 4096,
+      "input_limit": 4096,
+      "estimated_input": 11721,
+      "template_reserve": 256,
+      "estimate_method": "utf8_bytes_plus_template_reserve",
+      "included_references": [],
+      "omitted_references": []
+    },
+    "message": "The task alone exceeds the input budget. Shorten or split the task."
+  },
+  "short_task": {
+    "status": "saved",
+    "path": ".local/artifacts/budget-short-84c95b3e.html",
+    "finish_reason": "stop",
+    "generated_tokens": 414,
+    "elapsed_seconds": 19.797,
+    "prompt_tokens": 70,
+    "attempts": [
+      {
+        "finish_reason": "stop",
+        "generated_tokens": 414,
+        "elapsed_seconds": 19.797,
+        "prompt_tokens": 70
+      }
+    ],
+    "context": {
+      "context_window": 8192,
+      "output_reserved": 4096,
+      "input_limit": 4096,
+      "estimated_input": 621,
+      "template_reserve": 256,
+      "estimate_method": "utf8_bytes_plus_template_reserve",
+      "included_references": [],
+      "omitted_references": []
+    }
+  },
+  "with_references": {
+    "status": "saved",
+    "path": ".local/artifacts/budget-references-84c95b3e.html",
+    "finish_reason": "stop",
+    "generated_tokens": 394,
+    "elapsed_seconds": 15.0,
+    "prompt_tokens": 94,
+    "attempts": [
+      {
+        "finish_reason": "stop",
+        "generated_tokens": 394,
+        "elapsed_seconds": 15.0,
+        "prompt_tokens": 94
+      }
+    ],
+    "context": {
+      "context_window": 8192,
+      "output_reserved": 4096,
+      "input_limit": 4096,
+      "estimated_input": 716,
+      "template_reserve": 256,
+      "estimate_method": "utf8_bytes_plus_template_reserve",
+      "included_references": [
+        2
+      ],
+      "omitted_references": [
+        1
+      ]
+    }
+  }
+}

@@ -6,7 +6,7 @@
 
 🦙 Ollama · 🧩 Continue · ⚡ 本机推理 · 🔧 可修改配置
 
-[快速开始](#quick-start) · [修改配置](#configuration) · [AMD 部署](docs/ryzen-deployment.md) · [常见问题](#faq)
+[快速开始](#quick-start) · [从源码接入 Continue](docs/continue-installation.md) · [修改配置](#configuration) · [AMD 部署](docs/ryzen-deployment.md) · [常见问题](#faq)
 
 </div>
 
@@ -28,6 +28,38 @@ flowchart LR
 ```
 
 模型负责生成回答和提出工具调用；Continue 执行工具并返回结果。首次下载程序、模型和扩展需要网络，本项目模型推理使用本机 API。
+
+## 🔌 在 Continue 调用自研 Python 工具
+
+首次获取源码或换电脑，请按 [从源码接入 Cursor 的 Continue](docs/continue-installation.md) 安装。教程包括 Ollama 模型准备、Continue 用户配置、项目级 MCP 注册和一次实际写入验证。
+
+本机已配置 `local-artifacts` MCP 服务。在 Cursor 打开本仓库，切到 **Continue → Agent**，选择支持工具调用的本地模型，然后发送：
+
+> 请调用 generate_html_file，生成一个 SVG 鹈鹕骑自行车的单文件 HTML，文件名为 pelican-local.html。返回工具报告的路径。
+
+工具通过 Ollama 11435 调用 `local-coder-4060-9b`，使用 8K 上下文和 4096 输出预算。结果保存在 `.local/artifacts/`。截断会返回 `truncated`，同一任务的已确认结果会返回 `reused`，同名冲突会返回 `conflict`。换一个文件名即可进行新的生成实验。Continue 仍按当前工具策略处理批准。
+
+换机后，在项目根目录安装依赖并生成当前机器的配置：
+
+```powershell
+python -m venv .local/continue-mcp
+& ./.local/continue-mcp/Scripts/python.exe -m pip install -r requirements-mcp.txt
+& ./.local/continue-mcp/Scripts/python.exe local_artifacts.py --configure
+```
+
+`--configure` 将当前 Python 和脚本路径写入 `.continue/mcpServers/local-artifacts.local.json`。执行 `Developer: Reload Window` 后，在 Continue 的 **Tools → MCP Servers** 核对服务状态。需要使用同一 Ollama 服务上的其他模型时，在配置的 `local-artifacts` 对象中设置 `"env": {"LOCAL_ARTIFACT_MODEL": "模型名称"}` 后重载。
+
+工具实现和验证分别见 [Python 模块](local_artifacts.py)、[接入设计](2026-11-07-continue-mcp-design.md)及 [MCP 实测记录](docs/evidence/2026-11-07-continue-mcp-verification.json)。
+
+工具内部使用 Ollama 流式接口，[退化检测模块](generation_guard.py)分别观察思考和正文。短片段连续重复至少 32 次且占至少 96 字符时，检测器关闭响应流并标记 `degeneration`，该次输出不会保存。检测跳过含常见标记字符的重复片段，以减少对正常 SVG 标签的误判。中止时如果后端未给出 token 数，结果记录已观察到的流事件数。现有 Continue 窗口需要重载才能让 MCP 进程加载新版代码。
+
+4060 上使用 9B 进行真实 MCP 对照，诱发数字复读后约 8.9 秒中止，Ollama 记录了任务取消。后续正常 SVG 请求生成 864 tokens 并保存。见 [连续复读实测](docs/evidence/2026-11-07-generation-guard-verification.json)。
+
+短句轮换检测将近 24 个短句归一化后计数，若只有 2 至 6 种短句、每种至少出现 3 次，则以 `pattern: sentence_rotation` 返回。它检查思考和出现 HTML 标记前的正文；原有连续复读检测继续覆盖整段正文。受控 Ollama 文本请求在约 2.9 秒中止，后续标准交付流程生成 SVG 并保存。阈值与其他任务的误报率仍待进一步评估。见 [短句轮换实测](docs/evidence/2026-11-07-sentence-rotation-verification.json)。
+
+首轮退化后，交付工具保留原任务与文件名，开启一次新的生成请求。失败轮的部分输出不会进入重试。恢复成功时只保存最终结果，两次都退化则返回 `degeneration`。`attempts` 分别记录每轮的结束原因、耗时和已知 token 数。截断、连接错误和文件冲突各自返回，避免重复执行。
+
+[上下文预算](context_budget.py)在 8K 窗口中默认预留 4096 tokens 给输出。工具可接收可选的 `references` 文本片段列表，按优先级纳入能放下的完整片段。任务要求保留原文，任务本身超额时直接返回 `context_overflow`。输入用 UTF-8 字节数加模板余量做保守估算，工具同时记录实际生成中 Ollama 返回的输入 token 数。`context` 中的资料编号从 1 开始。
 
 ## 📍 当前状态
 
@@ -270,6 +302,23 @@ python .\scripts\download-model.py
 
 会话日志显示模型在文件存在时继续调用 create_new_file，收到明确错误后又调用不存在的 write_file。已补充活动规则及可复用模板：先 read_file，再使用实际可用的 single_find_and_replace（filepath、old_string、new_string）或 edit_existing_file（filepath、changes）；不通过删除重建绕过。工具策略需在 Continue 工具列表中另行核对，规则不能启用已排除的工具。此次没有改动用户 HTML；正确编辑的端到端结果仍待验证。
 
-## 🎨 本地模型绘图优化结果
+## 🧠 RTX 4060：新增 9B 模型
+
+2026-11-06 本机已下载并验证 `qwen3.5:9b-q4_K_M`，创建独立别名 `local-coder-4060-9b`。Continue 用户配置已追加 **Local Coder 4060 9B**，原有 4B 配置保留；重载窗口并在新会话中选择该模型即可使用。仓库模板见 [Continue 配置](continue/config.yaml)，模型参数见 [9B Modelfile](profiles/rtx-4060/Modelfile.9b)。
+
+当前基线：8K 上下文、4096 输出、温度 0.2、默认关闭思考，API 端口 11435。实测 `ollama ps` 为 **12%/88% CPU/GPU**，不是全 GPU；整机 GPU 显存约 6491MiB / 8188MiB。两次短请求生成速度约 28 tokens/s，不代表长上下文或完整编码任务的速度。
+
+验证范围为中文短回答、正确返回 `create_new_file` 名称及参数；没有实际执行该工具，未验证 Continue 9B 的端到端文件写入。原始响应见 [9B API 证据](docs/evidence/2026-11-06-4060-9b-verification.json)。
+
+此次连接的 11435 服务实际将新模型存放于 `%USERPROFILE%\.ollama\models`（已通过 show 返回的模型路径核对）。本项目 `scripts/start.ps1` 另设 `.local/models`，两者不是同一模型库；若切换到脚本启动的独立服务，需要在该模型库重新 pull/create 或正确迁移模型后使用。下载文件不纳入 Git。
+
+重建别名时，在连接到包含该模型的 Ollama 服务后执行：
+
+```powershell
+$env:OLLAMA_HOST = '127.0.0.1:11435'
+& .\.local\ollama\ollama.exe create local-coder-4060-9b -f .\profiles\rtx-4060\Modelfile.9b
+```
+
+## 🎨 本地模型绘图优化结果（4B 历史实验）
 
 2026-11-05 完成11轮本地Qwen3.5 4B实验后，按用户要求仅保留最佳结果及其复现信息：[推荐HTML](鹈鹕测试/index.html)、[配置参数](鹈鹕测试/配置.json)、[实际提示词](鹈鹕测试/提示词.md)。最佳产物来自第8轮完整生成加第9轮模型局部修订；配置保存模型摘要、两阶段参数、实际修订和结果哈希，提示词保留完整消息。其余作品、截图、实验脚本、报告和该目录临时协作入口已清理；本目录继承根协作规则。未修改用户Continue全局配置，未人工绘制替代模型结果，未由Agent暂存、提交或推送。

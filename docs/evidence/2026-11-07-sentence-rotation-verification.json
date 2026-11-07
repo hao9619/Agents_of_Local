@@ -1,0 +1,26 @@
+{
+  "model": "local-coder-4060-9b",
+  "probe": "Plain-text rotation induced with a diagnostic Ollama request; normal SVG generated through the standard delivery function.",
+  "rotation": {
+    "status": "degeneration",
+    "finish_reason": "degeneration",
+    "generated_tokens": null,
+    "elapsed_seconds": 2.891,
+    "channel": "content",
+    "observed_chunks": 66,
+    "pattern": "sentence_rotation",
+    "window_sentences": 24,
+    "distinct_sentences": 4,
+    "message": "Sustained repetition detected. Generation was interrupted and no file was saved."
+  },
+  "normal_svg": {
+    "status": "saved",
+    "path": ".local\\artifacts\\rotation-svg-1e954b68.html",
+    "finish_reason": "stop",
+    "generated_tokens": 559,
+    "elapsed_seconds": 21.343
+  },
+  "server_cancellations": [
+    "srv          stop: cancel task, id_task = 1627"
+  ]
+}

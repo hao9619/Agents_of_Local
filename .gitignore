@@ -1,4 +1,5 @@
 .local/
 __pycache__/
 *.pyc
+.continue/mcpServers/local-artifacts.local.json
 

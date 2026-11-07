@@ -1,0 +1,27 @@
+{
+  "model": "local-coder-4060-9b",
+  "output_budget": 4096,
+  "repeat": {
+    "status": "degeneration",
+    "finish_reason": "degeneration",
+    "generated_tokens": null,
+    "elapsed_seconds": 8.89,
+    "channel": "content",
+    "observed_chunks": 71,
+    "fragment_chars": 3,
+    "repetitions": 32,
+    "message": "Sustained repetition detected. Generation was interrupted and no file was saved."
+  },
+  "normal_svg": {
+    "status": "saved",
+    "path": ".local/artifacts/guard-svg-a2300560.html",
+    "finish_reason": "stop",
+    "generated_tokens": 864,
+    "elapsed_seconds": 32.797,
+    "sha256": "8205ae9c50cd78e1f287f3d260f5cc823c589eda2e0fd814159e88b12cbd811c"
+  },
+  "followup_roundtrip_seconds": 32.797,
+  "server_request_log": [
+    "srv          stop: cancel task, id_task = 0"
+  ]
+}

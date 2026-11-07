@@ -1,0 +1,49 @@
+{
+  "entry": "MCP stdio client using the generated Continue config",
+  "model": "local-coder-4060-9b",
+  "results": {
+    "truncated": {
+      "status": "truncated",
+      "finish_reason": "length",
+      "generated_tokens": 1,
+      "elapsed_seconds": 9.844,
+      "message": "Output budget reached. Final file was not saved."
+    },
+    "saved": {
+      "status": "saved",
+      "path": ".local/artifacts/mcp-probe-998abb2c.html",
+      "finish_reason": "stop",
+      "generated_tokens": 314,
+      "elapsed_seconds": 12.14
+    },
+    "reused": {
+      "status": "reused",
+      "path": ".local/artifacts/mcp-probe-998abb2c.html",
+      "generated_tokens": 0
+    },
+    "conflict": {
+      "status": "conflict",
+      "path": ".local/artifacts/mcp-probe-998abb2c.html",
+      "message": "An existing file or receipt does not match this task."
+    },
+    "pelican": {
+      "status": "saved",
+      "path": ".local/artifacts/pelican-mcp-998abb2c.html",
+      "finish_reason": "stop",
+      "generated_tokens": 1362,
+      "elapsed_seconds": 52.078,
+      "sha256": "33bee69f267faf651fd7975dbe250226842640645cb5c943429a015e5383b9f9"
+    }
+  },
+  "cursor_continue": {
+    "version": "2.0.0",
+    "mode": "Agent",
+    "tool_visible": true,
+    "approval": "accepted for the verification request",
+    "tool_card": "success",
+    "file": ".local/artifacts/cursor-mcp-check.html",
+    "sha256": "a9b07df615fffeffc3513a5d9f9da15a170e41ccf98f922d5f8c5f658188d923",
+    "conversation_ended": true,
+    "path_repeated_in_chat_text": false
+  }
+}
