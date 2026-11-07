@@ -5,6 +5,7 @@ import json
 import logging
 import os
 import re
+import sqlite3
 import sys
 import tempfile
 import time
@@ -13,10 +14,13 @@ from pathlib import Path
 
 from context_budget import CONTEXT_WINDOW, RECOVERY_PREFIX, SYSTEM_PROMPT, output_budget, prepare_context
 from generation_guard import read_chat_stream
+from local_knowledge import search
+from task_state import TaskStore
 
 ROOT = Path(__file__).resolve().parent
 OUTPUT = ROOT / ".local" / "artifacts"
 CONFIG = ROOT / ".continue" / "mcpServers" / "local-artifacts.local.json"
+TASK_DATABASE = ROOT / ".local" / "task-state.sqlite3"
 OLLAMA = "http://127.0.0.1:11435"
 MODEL = "local-coder-4060-9b"
 LOG = logging.getLogger(__name__)
@@ -154,6 +158,29 @@ def deliver(task, filename, output, generate=generate_html, *, references=None):
     return {"status": "saved", "path": str(target), **stats}
 
 
+def generate_with_knowledge(task, filename, output, directory, query, *, references=None,
+                            generate=generate_html):
+    try:
+        matches = search(directory, query)
+    except OSError as error:
+        return {"status": "knowledge_error", "message": str(error)}
+    if not matches:
+        return {"status": "knowledge_no_match", "knowledge_sources": [],
+                "message": "No matching passage. Refine the query or add a relevant document."}
+    supplied = list(references or [])
+    sources = []
+    for match in matches:
+        source = f'{match["source"]}:{match["start_line"]}-{match["end_line"]}'
+        supplied.append(f'Source: {source}\n{match["text"]}')
+        sources.append({"source": match["source"], "start_line": match["start_line"],
+                        "end_line": match["end_line"], "reference": len(supplied)})
+    result = deliver(task, filename, output, generate, references=supplied)
+    context = result.get("context")
+    for source in sources:
+        source["included"] = (source["reference"] in context["included_references"]) if context else None
+    return {**result, "knowledge_sources": sources}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--configure", action="store_true", help="Register this interpreter and script in Continue.")
@@ -171,16 +198,74 @@ def main():
 
     logging.basicConfig(level=logging.INFO, stream=sys.stderr)
     server = FastMCP("Local Artifacts")
+    knowledge_dir = ROOT / os.environ.get("LOCAL_KNOWLEDGE_DIR", ".local/knowledge")
+    if not TASK_DATABASE.resolve().is_relative_to(ROOT):
+        raise OSError("Task database resolves outside the workspace.")
+    tasks = TaskStore(TASK_DATABASE)
+
+    def task_operation(operation, *args):
+        try:
+            return operation(*args)
+        except LookupError as error:
+            return {"status": "task_not_found", "message": str(error)}
+        except ValueError as error:
+            return {"status": "invalid_input", "message": str(error)}
+        except (OSError, sqlite3.Error) as error:
+            return {"status": "task_storage_error", "message": str(error)}
 
     @server.tool()
-    def generate_html_file(task: str, filename: str, references: list[str] | None = None) -> dict:
-        """Save one HTML file. Provide a task, a simple .html filename, and optional reference snippets in priority order."""
+    def start_task(requirements: str, steps: list[str]) -> dict:
+        """Save original requirements and planned steps for a new multi-turn task."""
+        return task_operation(tasks.create, requirements, steps)
+
+    @server.tool()
+    def resume_task(task_id: str | None = None) -> dict:
+        """Load a task checkpoint by ID, or list recent tasks if no ID is supplied."""
+        if task_id is None:
+            return task_operation(lambda: {"status": "listed", "tasks": tasks.recent()})
+        return task_operation(tasks.get, task_id)
+
+    @server.tool()
+    def complete_task_step(task_id: str, step_number: int, note: str = "") -> dict:
+        """Record a completed step using its 1-based number after confirming its outcome."""
+        return task_operation(tasks.complete, task_id, step_number, note)
+
+    @server.tool()
+    def search_knowledge(query: str) -> dict:
+        """Find relevant local Markdown or text snippets with file and line references."""
+        try:
+            matches = search(knowledge_dir, query)
+        except OSError as error:
+            return {"status": "knowledge_error", "message": str(error)}
+        return {"status": "found" if matches else "no_match", "matches": matches}
+
+    @server.tool()
+    def generate_html_file(task: str, filename: str, references: list[str] | None = None,
+                           knowledge_query: str | None = None, task_id: str | None = None) -> dict:
+        """Save HTML with optional references or knowledge_query. Pass task_id to record the tool result."""
+        if task_id is not None:
+            state = task_operation(tasks.get, task_id)
+            if "task_id" not in state:
+                return state
+            if not task.strip():
+                return {"status": "invalid_input", "message": "Task must be non-empty."}
+            task = f'Saved task requirements:\n{state["requirements"]}\n\nCurrent step:\n{task}'
         try:
             if not OUTPUT.resolve().is_relative_to(ROOT):
                 raise OSError("Artifact directory resolves outside the workspace.")
-            result = deliver(task, filename, OUTPUT, references=references)
+            if knowledge_query:
+                result = generate_with_knowledge(task, filename, OUTPUT, knowledge_dir,
+                                                 knowledge_query, references=references)
+            else:
+                result = deliver(task, filename, OUTPUT, references=references)
         except OSError as error:
             result = {"status": "storage_error", "message": str(error)}
+        if task_id is not None:
+            result["task_id"] = task_id
+            try:
+                tasks.record_delivery(task_id, filename, result)
+            except (OSError, LookupError, sqlite3.Error) as error:
+                result["task_record_error"] = str(error)
         LOG.info("generate_html_file %s %s", filename, result)
         return result
 

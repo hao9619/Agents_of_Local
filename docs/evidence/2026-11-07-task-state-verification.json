@@ -1,0 +1,86 @@
+{
+  "entry": "two independent MCP stdio processes",
+  "resumed": {
+    "task_id": "460962f5e5074ba6b138c56465137778",
+    "requirements": "This is a local resume test. The final HTML page must visibly display exactly RESUME-4B6634CE.",
+    "steps": [
+      {
+        "number": 1,
+        "description": "Choose a minimal HTML layout.",
+        "status": "completed",
+        "note": "Use a single heading for the required label."
+      },
+      {
+        "number": 2,
+        "description": "Generate and save the HTML.",
+        "status": "pending",
+        "note": null
+      }
+    ],
+    "status": "active",
+    "next_step": 2,
+    "tool_result_count": 0,
+    "recent_tool_results": []
+  },
+  "generation": {
+    "status": "saved",
+    "path": ".local/artifacts/task-resume-4b6634ce.html",
+    "finish_reason": "stop",
+    "generated_tokens": 262,
+    "elapsed_seconds": 14.266,
+    "prompt_tokens": 77,
+    "attempts": [
+      {
+        "finish_reason": "stop",
+        "generated_tokens": 262,
+        "elapsed_seconds": 14.266,
+        "prompt_tokens": 77
+      }
+    ],
+    "context": {
+      "context_window": 8192,
+      "output_reserved": 4096,
+      "input_limit": 4096,
+      "estimated_input": 642,
+      "template_reserve": 256,
+      "estimate_method": "utf8_bytes_plus_template_reserve",
+      "included_references": [],
+      "omitted_references": []
+    },
+    "task_id": "460962f5e5074ba6b138c56465137778"
+  },
+  "completed": {
+    "task_id": "460962f5e5074ba6b138c56465137778",
+    "requirements": "This is a local resume test. The final HTML page must visibly display exactly RESUME-4B6634CE.",
+    "steps": [
+      {
+        "number": 1,
+        "description": "Choose a minimal HTML layout.",
+        "status": "completed",
+        "note": "Use a single heading for the required label."
+      },
+      {
+        "number": 2,
+        "description": "Generate and save the HTML.",
+        "status": "completed",
+        "note": "Saved file contains the required marker."
+      }
+    ],
+    "status": "completed",
+    "next_step": null,
+    "tool_result_count": 1,
+    "recent_tool_results": [
+      {
+        "tool": "generate_html_file",
+        "filename": "task-resume-4b6634ce.html",
+        "status": "saved",
+        "path": ".local/artifacts/task-resume-4b6634ce.html",
+        "finish_reason": "stop"
+      }
+    ]
+  },
+  "missing_task": {
+    "status": "task_not_found",
+    "message": "Unknown task ID. Use resume_task without an ID to list recent tasks."
+  }
+}

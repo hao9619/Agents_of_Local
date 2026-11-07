@@ -1,0 +1,74 @@
+{
+  "model": "local-coder-4060-9b",
+  "entry": "MCP stdio",
+  "task": "Create a minimal complete HTML page for the pelican release. Put the exact release badge specified in the reference in visible text. Keep the page short.",
+  "query": "Pelican release badge",
+  "fixture_rule": "Pelican release badge: the HTML page must display exactly NORTHWIND-E9AAB0EABF3A as visible text.",
+  "retrieval": {
+    "status": "found",
+    "matches": [
+      {
+        "source": "pelican-release.md",
+        "start_line": 3,
+        "end_line": 3,
+        "text": "Pelican release badge: the HTML page must display exactly NORTHWIND-E9AAB0EABF3A as visible text."
+      },
+      {
+        "source": "pelican-release.md",
+        "start_line": 1,
+        "end_line": 1,
+        "text": "# Release rules"
+      }
+    ]
+  },
+  "no_match": {
+    "status": "knowledge_no_match",
+    "knowledge_sources": [],
+    "message": "No matching passage. Refine the query or add a relevant document."
+  },
+  "generation": {
+    "status": "saved",
+    "path": ".local/artifacts/kb-proof-995b8369.html",
+    "finish_reason": "stop",
+    "generated_tokens": 285,
+    "elapsed_seconds": 15.343,
+    "prompt_tokens": 137,
+    "attempts": [
+      {
+        "finish_reason": "stop",
+        "generated_tokens": 285,
+        "elapsed_seconds": 15.343,
+        "prompt_tokens": 137
+      }
+    ],
+    "context": {
+      "context_window": 8192,
+      "output_reserved": 4096,
+      "input_limit": 4096,
+      "estimated_input": 861,
+      "template_reserve": 256,
+      "estimate_method": "utf8_bytes_plus_template_reserve",
+      "included_references": [
+        1,
+        2
+      ],
+      "omitted_references": []
+    },
+    "knowledge_sources": [
+      {
+        "source": "pelican-release.md",
+        "start_line": 3,
+        "end_line": 3,
+        "reference": 1,
+        "included": true
+      },
+      {
+        "source": "pelican-release.md",
+        "start_line": 1,
+        "end_line": 1,
+        "reference": 2,
+        "included": true
+      }
+    ]
+  }
+}

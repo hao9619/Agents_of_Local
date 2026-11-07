@@ -97,7 +97,35 @@ python -m venv .local/continue-mcp
 
 工具卡片成功且 `.local/artifacts/continue-smoke-test.html` 存在，即可确认链路打通。聊天正文有时不会复述路径，可以通过工具结果和实际文件检查。再试鹈鹕任务时，使用新文件名，例如 `pelican-local.html`。
 
-工具还接受可选的 `references` 字符串列表。将最重要的资料片段放在前面，工具会在给输出留足预算后选入可容纳的片段。`context.included_references` 和 `context.omitted_references` 按传入顺序从 1 编号。该参数用于直接传入资料，后续的知识库检索可以复用同一入口。
+工具还接受可选的 `references` 字符串列表。将最重要的资料片段放在前面，工具会在给输出留足预算后选入可容纳的片段。`context.included_references` 和 `context.omitted_references` 按传入顺序从 1 编号。
+
+## 6. 使用本地知识库
+
+在项目根目录建立 `.local/knowledge/`，将资料保存为 UTF-8 的 `.md` 或 `.txt`。工具查询时会扫描该目录及子目录。首版使用词项匹配，单文件最多 128 KiB，每次返回最多三个片段。查询中带上文档中的专用名词通常更容易命中。
+
+如要用其他目录，在生成的 `.continue/mcpServers/local-artifacts.local.json` 中，给 `local-artifacts` 对象的 `env` 添加 `"LOCAL_KNOWLEDGE_DIR": "D:/my-knowledge"`，再重载 Cursor。相对路径从项目根目录解析。
+
+在 Continue Agent 中先试检索，再试带资料生成：
+
+> 请调用 search_knowledge，查询“鹈鹕 发布标识”，并给出文件名与行号。
+
+> 请调用 generate_html_file，文件名用 release-page.html，knowledge_query 用“鹈鹕 发布标识”。生成一个显示资料中发布标识的 HTML 页面。
+
+带资料生成的工具结果会列出 `knowledge_sources`，每项包含文件、行号及是否进入本轮上下文。没有检索命中时返回 `knowledge_no_match`。有命中但预算不足时，`included` 会标为 `false`，可以据此调整查询或缩短资料。若本次复用已有产物，`included` 为 `null`，因为没有重新生成。
+
+## 7. 跨会话继续任务
+
+在 Continue 的 Agent 模式中，先用 `start_task` 保存原始要求和按顺序排列的步骤，记下返回的 `task_id`：
+
+> 请用 start_task 建立任务。原始要求是生成单文件 HTML，画出有明显长嘴和喉囊的鹈鹕骑自行车。步骤为「拟定 SVG 结构」「生成并保存动画」。
+
+完成一个步骤后，调用 `complete_task_step`，传入 `task_id`、从 1 开始的 `step_number` 和简短 `note`。工具返回 `next_step` 指向第一个未完成步骤。生成 HTML 时把 `task_id` 一起传给 `generate_html_file`，Python 会把保存的原要求加入本次上下文，并记录这次实际成功或失败的返回。生成结果和步骤完成是两个操作，确认任务要求满足后再标记步骤完成。
+
+新建 Continue 会话后，可以这样恢复：
+
+> 请调用 resume_task，读取任务 ID 为「这里填实际 ID」的任务，先告诉我原始要求、已有文件结果和下一步，再从未完成的步骤继续。
+
+如果忘了 ID，可以先调用不带参数的 `resume_task`，查看最近十条任务。带 ID 的结果会返回原始要求、各步骤、最近六条文件工具结果和结果总数。数据库保存在仓库的 `.local/task-state.sqlite3`。这套状态可跨本机 MCP 重启和 Continue 会话，当前由用户或 Agent 显式建立和恢复任务。
 
 ## 常见问题
 

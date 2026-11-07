@@ -61,6 +61,10 @@ python -m venv .local/continue-mcp
 
 [上下文预算](context_budget.py)在 8K 窗口中默认预留 4096 tokens 给输出。工具可接收可选的 `references` 文本片段列表，按优先级纳入能放下的完整片段。任务要求保留原文，任务本身超额时直接返回 `context_overflow`。输入用 UTF-8 字节数加模板余量做保守估算，工具同时记录实际生成中 Ollama 返回的输入 token 数。`context` 中的资料编号从 1 开始。
 
+本地知识库读取 `.local/knowledge/` 下的 Markdown 与 TXT。用 `search_knowledge` 检查片段和出处，或给 `generate_html_file` 传入 `knowledge_query`，让工具检索并按预算纳入资料。目录设置和试用方法见 [Continue 安装教程](docs/continue-installation.md#6-使用本地知识库)。
+
+多轮任务可用 `start_task` 保存原始要求与步骤，`complete_task_step` 记录已确认的进展，`resume_task` 在新会话中恢复。传入 `task_id` 的 HTML 生成会带入原始要求并记录实际结果。状态存在本机 `.local/task-state.sqlite3`，继续执行由 Continue Agent 根据恢复结果发起。见 [多轮任务用法](docs/continue-installation.md#7-跨会话继续任务)。
+
 ## 📍 当前状态
 
 > 更新于 **2026-11-06**。RTX 4060 本机部署及 API 验证已完成；AMD 用户反馈 Hybrid 路线完成一次鹈鹕文件任务，纯 NPU 路线已安装 FLM 后端，模型运行待验证。完整过程与结论边界见 [本地 AI 部署排障经验帖](2026-11-06-local-ai-experience.md)。
@@ -75,7 +79,7 @@ python -m venv .local/continue-mcp
 | GPU 验证 | `100% GPU`，32K 配置下模型占用约 **4.1GB** |
 | API 验证 | 中文生成、工具调用、工具结果回传均通过 |
 | 编辑器验证 | Continue 面板、模型选择及双侧栏布局已确认；用户后续反馈本机创建、改写文件正常，历史排障记录保留当时状态 |
-| 外挂知识库 | 尚未实现，后续可通过 MCP 接入 |
+| 外挂知识库 | 已提供本地 Markdown/TXT 检索、出处和预算接入 |
 
 上述显存数值是当时测试结果，不代表整机显存总占用，也不代表复杂编码任务准确率。
 
