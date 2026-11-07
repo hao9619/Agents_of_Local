@@ -3,8 +3,8 @@ import unittest
 from pathlib import Path
 from unittest.mock import Mock
 
-from local_artifacts import generate_with_knowledge
-from local_knowledge import search
+from local_tools.artifacts import generate_with_knowledge
+from local_tools.local_knowledge import search
 
 
 class KnowledgeTests(unittest.TestCase):

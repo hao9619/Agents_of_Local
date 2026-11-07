@@ -1,6 +1,6 @@
 # Continue 本地工具接入设计
 
-状态：设计已确认，首版已实现。实测记录见 [MCP 验证证据](docs/evidence/2026-11-07-continue-mcp-verification.json)。
+状态：设计已确认，首版已实现。实测记录见 [MCP 验证证据](evidence/2026-11-07-continue-mcp-verification.json)。
 
 ## 从编辑器调用我们自己的代码
 

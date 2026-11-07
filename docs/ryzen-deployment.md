@@ -1,6 +1,6 @@
 # 另一台 Ryzen AI 9 365 电脑如何部署
 
-更新时间：2026-11-06。本文主要说明 Ollama GPU 路线，保留早期部署基线。适用硬件：Windows 11、Ryzen AI 9 365、32GB 内存、无独显。Lemonade Hybrid 的用户验证结果、下载排障及纯 NPU 的当前进展，统一见 [部署排障经验帖](../2026-11-06-local-ai-experience.md)；其中纯 NPU 模型运行尚未验证。
+更新时间：2026-11-06。本文主要说明 Ollama GPU 路线，保留早期部署基线。适用硬件：Windows 11、Ryzen AI 9 365、32GB 内存、无独显。Lemonade Hybrid 的用户验证结果、下载排障及纯 NPU 的当前进展，统一见 [部署排障经验帖](2026-11-06-local-ai-experience.md)；其中纯 NPU 模型运行尚未验证。
 
 ## 建议配置
 

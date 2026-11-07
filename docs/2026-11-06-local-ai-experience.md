@@ -41,13 +41,13 @@ Lemonade 自带聊天界面不妨碍 Continue 接入。继续使用 Cursor 的�
 - 项目独立运行环境及权重在 `.local/`，不纳入 Git。
 - Windows Ollama 默认模型目录通常是 `%USERPROFILE%\.ollama\models`；设置了 `OLLAMA_MODELS` 后以该变量为准。下载位置不必等于程序安装位置。
 - Continue 实际使用的用户配置为 `%USERPROFILE%\.continue\config.yaml`。仓库的 `continue/config.yaml` 是可共享模板，不会因为放进项目就自动替换用户配置。
-- 项目规则可放在 `.continue/rules/`；活动文件工具规则见 [.continue/rules/tool-use.md](.continue/rules/tool-use.md)，复用模板见 [continue/rules/tool-use.md](continue/rules/tool-use.md)。
+- 项目规则可放在 `.continue/rules/`；活动文件工具规则见 [.continue/rules/tool-use.md](../.continue/rules/tool-use.md)，复用模板见 [continue/rules/tool-use.md](../continue/rules/tool-use.md)。
 
-32K API 测试曾确认 GPU 加速，模型占用约 4.1GB；这不是整机总显存，也不是所有请求的固定占用。证据见 [32K 工具调用测试](docs/evidence/2026-11-05-context-32k.json)。
+32K API 测试曾确认 GPU 加速，模型占用约 4.1GB；这不是整机总显存，也不是所有请求的固定占用。证据见 [32K 工具调用测试](evidence/2026-11-05-context-32k.json)。
 
 ### 网络与多机复现
 
-曾遇到 Ollama 仓库域名 DNS 错误。项目保留 [备用下载脚本](scripts/download-model.py)，按模型清单下载并校验，不把旧 IP 当永久解决办法。
+曾遇到 Ollama 仓库域名 DNS 错误。项目保留 [备用下载脚本](../scripts/download-model.py)，按模型清单下载并校验，不把旧 IP 当永久解决办法。
 
 换电脑不仅要复制 Git 仓库，还要安装运行环境、下载权重、配置用户目录中的 Continue 配置，并启动服务。模型权重、用户目录配置、代理状态和设备驱动不会随普通 Git 克隆自动恢复。
 
@@ -79,7 +79,7 @@ Continue 的当前会话可能在切换目录后继续保留，即使读取的�
 
 不要假定插件一定会自动压缩所有历史并继续成功执行；本项目未验证可靠的自动压缩闭环。排障时新建会话、精简无关上下文，并核对两端长度设置。
 
-本机一次鹈鹕 API 对照中，开启思考、输出上限 2048 时返回 `done_reason=length`，HTML 不完整。改为关闭思考、8192 输出预算后，同类请求约 56 秒正常结束，输出包含 HTML 结束标签。见 [生成预算证据](docs/evidence/2026-11-05-generation-budget.json)。
+本机一次鹈鹕 API 对照中，开启思考、输出上限 2048 时返回 `done_reason=length`，HTML 不完整。改为关闭思考、8192 输出预算后，同类请求约 56 秒正常结束，输出包含 HTML 结束标签。见 [生成预算证据](evidence/2026-11-05-generation-budget.json)。
 
 这说明预算不足可以导致失败，但不能解释每一次空白、重复或工具异常。思考、正文及工具参数都会消耗生成额度；`maxTokens` 也不是独立于上下文之外的额外空间。
 
@@ -103,9 +103,9 @@ Continue 的当前会话可能在切换目录后继续保留，即使读取的�
 
 按用户要求，现在只保留三份最佳复现材料：
 
-- [推荐 HTML](鹈鹕测试/index.html)
-- [配置参数](鹈鹕测试/配置.json)
-- [实际提示词](鹈鹕测试/提示词.md)
+- [推荐 HTML](../鹈鹕测试/index.html)
+- [配置参数](../鹈鹕测试/配置.json)
+- [实际提示词](../鹈鹕测试/提示词.md)
 
 最佳结果来自第 8 轮完整生成，加第 9 轮模型提出的三处精确修订，不是单次生成。完整生成参数为 16K 上下文、8192 输出、温度 0.6、seed 42、关闭思考；局部修订为 4096 输出、温度 0.2。其余测试作品和过程截图已按要求清理，不重新创建。
 

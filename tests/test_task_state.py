@@ -2,7 +2,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from task_state import TaskStore
+from local_tools.task_state import TaskStore
 
 
 class TaskStateTests(unittest.TestCase):

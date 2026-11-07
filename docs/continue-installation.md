@@ -16,7 +16,7 @@
 Invoke-RestMethod 'http://127.0.0.1:11435/api/tags' | Select-Object -ExpandProperty models | Select-Object name
 ```
 
-首次部署、且使用项目独立运行包时，按 [README 快速开始](../README.md#quick-start) 安装运行环境。RTX 4060 路线的命令如下：
+首次部署、且使用项目独立运行包时，按 [README 快速开始](4060-deployment.md#quick-start) 安装运行环境。RTX 4060 路线的命令如下：
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\scripts\install-runtime.ps1
@@ -71,7 +71,7 @@ python -m venv .local/continue-mcp
 & ./.local/continue-mcp/Scripts/python.exe local_artifacts.py --configure
 ```
 
-最后一条命令生成 `.continue/mcpServers/local-artifacts.local.json`。其中 `command` 指向虚拟环境的 Python，`args` 指向仓库的 `local_artifacts.py`。这两个值包含当前电脑的绝对路径，所以每台电脑分别生成配置。换目录后重新生成，并重新应用自定义 `env`。
+最后一条命令生成 `.continue/mcpServers/local-artifacts.local.json`。其中 `command` 指向虚拟环境的 Python，`args` 指向仓库的 `local_artifacts.py` 启动入口。这两个值包含当前电脑的绝对路径，所以每台电脑分别生成配置。换目录后重新执行命令刷新路径。原配置中的自定义 `env` 会保留。
 
 **关键一步：工具自己的生成模型需要单独配置。** 当前工具默认用 `local-coder-4060-9b`，而上面的 4B 安装流程创建的是 `local-coder-4060`。使用 4B 时，打开生成的 JSON，在 `mcpServers` → `local-artifacts` 下、与 `command` 和 `args` 平级添加：
 
@@ -141,6 +141,6 @@ python -m venv .local/continue-mcp
 
 ## 接入自己的下一项能力
 
-在 [local_artifacts.py](../local_artifacts.py) 找到 `@server.tool()`。这个装饰器把普通 Python 函数暴露给 Continue，函数的参数类型和说明形成模型可见的工具描述。新增能力后，重载窗口，在 Tools 页面确认工具，再用一个最小任务验证。Continue 的配置方式见 [MCP 文档](https://docs.continue.dev/customize/deep-dives/mcp)。
+在 [local_artifacts.py](../local_tools/artifacts.py) 找到 `@server.tool()`。这个装饰器把普通 Python 函数暴露给 Continue，函数的参数类型和说明形成模型可见的工具描述。新增能力后，重载窗口，在 Tools 页面确认工具，再用一个最小任务验证。Continue 的配置方式见 [MCP 文档](https://docs.continue.dev/customize/deep-dives/mcp)。
 
 仓库保存工具源码、依赖清单与验证记录。虚拟环境、权重、实验产物和带绝对路径的本机 MCP 配置由安装者本地生成。已有测试记录见 [Cursor 接入验证](evidence/2026-11-07-continue-mcp-verification.json) 和 [退化检测验证](evidence/2026-11-07-generation-guard-verification.json)。

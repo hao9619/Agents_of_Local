@@ -1,10 +1,12 @@
 import json
+import io
+import os
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
-from local_artifacts import deliver, read_chat_stream
+from local_tools.artifacts import deliver, generate_html, read_chat_stream
 
 
 def stream(*messages, finish="stop"):
@@ -15,6 +17,19 @@ def stream(*messages, finish="stop"):
 
 
 class StreamTests(unittest.TestCase):
+    def test_configured_local_backend_uses_compatible_stream(self):
+        response = io.BytesIO(b"\n".join(stream({"content": "<html>ok</html>"})))
+        opener = Mock()
+        opener.open.return_value = response
+        with patch.dict(os.environ, {"LOCAL_ARTIFACT_API_BASE": "http://127.0.0.1:13305/",
+                                     "LOCAL_ARTIFACT_MODEL": "qwen3.5-9b-FLM"}):
+            with patch("urllib.request.build_opener", return_value=opener):
+                result = generate_html("Make HTML")
+        request = opener.open.call_args.args[0]
+        self.assertEqual(request.full_url, "http://127.0.0.1:13305/api/chat")
+        self.assertEqual(json.loads(request.data)["model"], "qwen3.5-9b-FLM")
+        self.assertEqual(result["done_reason"], "stop")
+
     def test_repeated_numbers_abort_before_reading_more(self):
         def chunks():
             for index in range(500):
