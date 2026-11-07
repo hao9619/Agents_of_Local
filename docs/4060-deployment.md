@@ -47,7 +47,7 @@ python -m venv .local/continue-mcp
 & ./.local/continue-mcp/Scripts/python.exe local_artifacts.py --configure
 ```
 
-`--configure` 将当前 Python 和脚本路径写入 `.continue/mcpServers/local-artifacts.local.json`。执行 `Developer: Reload Window` 后，在 Continue 的 **Tools → MCP Servers** 核对服务状态。需要使用同一 Ollama 服务上的其他模型时，在配置的 `local-artifacts` 对象中设置 `"env": {"LOCAL_ARTIFACT_MODEL": "模型名称"}` 后重载。
+`--configure` 将当前 Python 和脚本路径写入 `.continue/mcpServers/local-artifacts.local.yaml`。执行 `Developer: Reload Window` 后，在 Continue 的 **Tools → MCP Servers** 核对服务状态。需要使用同一 Ollama 服务上的其他模型时，给配置命令加上 `--model 模型名称` 后重载。
 
 工具实现和验证分别见 [Python 模块](../local_tools/artifacts.py)、[接入设计](2026-11-07-continue-mcp-design.md)及 [MCP 实测记录](evidence/2026-11-07-continue-mcp-verification.json)。
 

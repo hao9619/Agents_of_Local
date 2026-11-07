@@ -2,4 +2,5 @@
 __pycache__/
 *.pyc
 .continue/mcpServers/local-artifacts.local.json
+.continue/mcpServers/local-artifacts.local.yaml
 

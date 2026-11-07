@@ -50,7 +50,7 @@ python -m venv .local/continue-mcp
 & ./.local/continue-mcp/Scripts/python.exe local_artifacts.py --configure --api-base http://127.0.0.1:13305 --model qwen3.5-9b-FLM
 ```
 
-第三条命令生成本机的 `.continue/mcpServers/local-artifacts.local.json`，将工具内部的地址和模型绑定到 Lemonade。以前已装过依赖时可直接执行第三条。
+第三条命令生成本机的 `.continue/mcpServers/local-artifacts.local.yaml`，将工具内部的地址和模型绑定到 Lemonade。以前已装过依赖时可直接执行第三条。
 
 ## 3. 选择 Continue 的纯 NPU 模型
 
@@ -86,3 +86,13 @@ python -m venv .local/continue-mcp
 以工具返回 `saved` 且 `.local/artifacts/amd-mcp-check.html` 存在为通过。若 Continue 能聊天但工具报连接或模型错误，先检查第 1 节的短请求，再核对第 2 节生成的配置。
 
 资料、任务进度和实验文件都存放在各自电脑的 `.local/` 下。换机时按需复制 Markdown/TXT 资料。知识库和多轮状态的使用见 [Continue 工具教程](continue-installation.md#6-使用本地知识库)。
+
+## 5. 排查 MCP 请求超时
+
+如果生成 HTML 时提示 `MCP error -32001: Request timed out`，尤其是约一分钟就报错，先更新项目源码，再在项目根目录重新注册工具。已有 AMD 地址、模型和知识库配置时，直接运行以下命令即可保留这些设置。
+
+```powershell
+& ./.local/continue-mcp/Scripts/python.exe local_artifacts.py --configure
+```
+
+执行 **Developer: Reload Window**，确认 `local-artifacts` 在线。新配置让 Continue 等待工具最多 15 分钟。先按上一节跑简短的 HTML，再用新文件名重试长任务。如果简短测试仍失败，核对 `lemonade status`、第 1 节的 `/api/chat` 探测结果和 Continue 扩展版本。

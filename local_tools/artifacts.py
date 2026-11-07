@@ -19,7 +19,9 @@ from .task_state import TaskStore
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / ".local" / "artifacts"
-CONFIG = ROOT / ".continue" / "mcpServers" / "local-artifacts.local.json"
+CONFIG = ROOT / ".continue" / "mcpServers" / "local-artifacts.local.yaml"
+LEGACY_CONFIG = CONFIG.with_suffix(".json")
+MCP_TIMEOUT_MS = 900_000
 TASK_DATABASE = ROOT / ".local" / "task-state.sqlite3"
 OLLAMA = "http://127.0.0.1:11435"
 ENTRYPOINT = ROOT / "local_artifacts.py"
@@ -182,24 +184,66 @@ def generate_with_knowledge(task, filename, output, directory, query, *, referen
     return {**result, "knowledge_sources": sources}
 
 
+def write_config(path, config):
+    with tempfile.NamedTemporaryFile(dir=path.parent, delete=False) as temporary:
+        temp_path = Path(temporary.name)
+        try:
+            temporary.write((json.dumps(config, ensure_ascii=False, indent=2) + "\n").encode("utf-8"))
+            temporary.close()
+            temp_path.replace(path)
+        finally:
+            temporary.close()
+            temp_path.unlink(missing_ok=True)
+
+
+def configure_mcp(config_path, legacy_path, *, api_base=None, model=None, timeout=None):
+    legacy = json.loads(legacy_path.read_text(encoding="utf-8-sig")) if legacy_path.exists() else {}
+    old_servers = legacy.get("mcpServers", {})
+    old_entry = old_servers.get("local-artifacts", {})
+
+    # JSON syntax is valid YAML and lets the installer update its own file without extra dependencies.
+    config = {"name": "Local Artifacts", "version": "0.0.1", "schema": "v1", "mcpServers": []}
+    if config_path.exists():
+        config = json.loads(config_path.read_text(encoding="utf-8-sig"))
+    servers = config["mcpServers"]
+    entry = next((server for server in servers if server["name"] == "local-artifacts"), None)
+    if entry is None:
+        entry = {"name": "local-artifacts", "type": "stdio"}
+        servers.append(entry)
+    entry.update(command=sys.executable, args=[str(ENTRYPOINT)])
+    entry.setdefault("connectionTimeout", MCP_TIMEOUT_MS)
+    if timeout is not None:
+        entry["connectionTimeout"] = timeout
+
+    env = {**old_entry.get("env", {}), **entry.get("env", {})}
+    if api_base:
+        env["LOCAL_ARTIFACT_API_BASE"] = api_base
+    if model:
+        env["LOCAL_ARTIFACT_MODEL"] = model
+    if env:
+        entry["env"] = env
+
+    config_path.parent.mkdir(parents=True, exist_ok=True)
+    write_config(config_path, config)
+    if "local-artifacts" in old_servers:
+        del old_servers["local-artifacts"]
+        write_config(legacy_path, legacy)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--configure", action="store_true", help="Register this interpreter and script in Continue.")
     parser.add_argument("--api-base", help="Local Ollama-compatible address, e.g. http://127.0.0.1:13305.")
     parser.add_argument("--model", help="Model name for the MCP tool.")
+    parser.add_argument("--mcp-timeout-ms", type=int, help="Continue tool timeout in milliseconds (default: 900000).")
     args = parser.parse_args()
     if args.configure:
-        CONFIG.parent.mkdir(parents=True, exist_ok=True)
-        config = json.loads(CONFIG.read_text(encoding="utf-8")) if CONFIG.exists() else {}
-        entry = config.setdefault("mcpServers", {}).setdefault("local-artifacts", {})
-        entry.update(command=sys.executable, args=[str(ENTRYPOINT)])
-        if args.api_base or args.model:
-            env = entry.setdefault("env", {})
-            if args.api_base:
-                env["LOCAL_ARTIFACT_API_BASE"] = args.api_base
-            if args.model:
-                env["LOCAL_ARTIFACT_MODEL"] = args.model
-        CONFIG.write_text(json.dumps(config, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        if args.mcp_timeout_ms is not None and args.mcp_timeout_ms <= 0:
+            parser.error("--mcp-timeout-ms must be positive.")
+        try:
+            configure_mcp(CONFIG, LEGACY_CONFIG, api_base=args.api_base, model=args.model, timeout=args.mcp_timeout_ms)
+        except json.JSONDecodeError as error:
+            parser.error(f"Could not read the generated config. Keep its JSON-compatible YAML syntax. {error}")
         print(CONFIG)
         return
 

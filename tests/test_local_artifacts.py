@@ -6,7 +6,34 @@ import unittest
 from pathlib import Path
 from unittest.mock import Mock, patch
 
-from local_tools.artifacts import deliver, generate_html, read_chat_stream
+from local_tools.artifacts import configure_mcp, deliver, generate_html, read_chat_stream
+
+
+class ConfigTests(unittest.TestCase):
+    def test_migrate_json_to_continue_block_and_preserve_settings(self):
+        with tempfile.TemporaryDirectory() as directory:
+            legacy = Path(directory) / "local.json"
+            config = Path(directory) / "local.yaml"
+            legacy.write_text(json.dumps({"mcpServers": {
+                "local-artifacts": {"command": "python", "env": {
+                    "LOCAL_ARTIFACT_API_BASE": "http://127.0.0.1:13305",
+                    "LOCAL_ARTIFACT_MODEL": "qwen3.5-9b-FLM",
+                    "LOCAL_KNOWLEDGE_DIR": "my-notes",
+                }},
+                "other": {"command": "other-server"},
+            }}), encoding="utf-8")
+            configure_mcp(config, legacy)
+            entry = json.loads(config.read_text(encoding="utf-8"))["mcpServers"][0]
+            self.assertEqual(entry["name"], "local-artifacts")
+            self.assertEqual(entry["connectionTimeout"], 900000)
+            self.assertEqual(entry["env"]["LOCAL_ARTIFACT_MODEL"], "qwen3.5-9b-FLM")
+            self.assertEqual(entry["env"]["LOCAL_KNOWLEDGE_DIR"], "my-notes")
+            self.assertEqual(list(json.loads(legacy.read_text(encoding="utf-8"))["mcpServers"]), ["other"])
+            configure_mcp(config, legacy, model="qwen3.5-4b-FLM", timeout=300000)
+            entry = json.loads(config.read_text(encoding="utf-8"))["mcpServers"][0]
+            self.assertEqual(entry["env"]["LOCAL_ARTIFACT_API_BASE"], "http://127.0.0.1:13305")
+            self.assertEqual(entry["env"]["LOCAL_ARTIFACT_MODEL"], "qwen3.5-4b-FLM")
+            self.assertEqual(entry["connectionTimeout"], 300000)
 
 
 def stream(*messages, finish="stop"):

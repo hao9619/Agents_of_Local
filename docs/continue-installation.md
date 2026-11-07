@@ -71,7 +71,9 @@ python -m venv .local/continue-mcp
 & ./.local/continue-mcp/Scripts/python.exe local_artifacts.py --configure
 ```
 
-最后一条命令生成 `.continue/mcpServers/local-artifacts.local.json`。其中 `command` 指向虚拟环境的 Python，`args` 指向仓库的 `local_artifacts.py` 启动入口。这两个值包含当前电脑的绝对路径，所以每台电脑分别生成配置。换目录后重新执行命令刷新路径。原配置中的自定义 `env` 会保留。
+最后一条命令生成 `.continue/mcpServers/local-artifacts.local.yaml`。其中 `command` 指向虚拟环境的 Python，`args` 指向仓库的 `local_artifacts.py` 启动入口。这两个值包含当前电脑的绝对路径，所以每台电脑分别生成配置。换目录后重新执行命令刷新路径。
+
+如果已有旧版 JSON 配置，重新执行 `--configure` 会迁移其中的 `local-artifacts` 注册项，保留模型地址、模型名和其他 `env` 设置。新配置采用 YAML 兼容的 JSON 写法，手动编辑时请沿用这个格式，便于脚本更新。Continue 等待 MCP 工具的默认设置为 15 分钟，可通过 `--mcp-timeout-ms` 指定毫秒数。修改配置后重载 Cursor。
 
 **关键一步：工具自己的生成模型需要单独配置。** 当前工具默认用 `local-coder-4060-9b`，而上面的 4B 安装流程创建的是 `local-coder-4060`。使用 4B 时，打开生成的 JSON，在 `mcpServers` → `local-artifacts` 下、与 `command` 和 `args` 平级添加：
 
@@ -103,7 +105,7 @@ python -m venv .local/continue-mcp
 
 在项目根目录建立 `.local/knowledge/`，将资料保存为 UTF-8 的 `.md` 或 `.txt`。工具查询时会扫描该目录及子目录。首版使用词项匹配，单文件最多 128 KiB，每次返回最多三个片段。查询中带上文档中的专用名词通常更容易命中。
 
-如要用其他目录，在生成的 `.continue/mcpServers/local-artifacts.local.json` 中，给 `local-artifacts` 对象的 `env` 添加 `"LOCAL_KNOWLEDGE_DIR": "D:/my-knowledge"`，再重载 Cursor。相对路径从项目根目录解析。
+如要用其他目录，在生成的 `.continue/mcpServers/local-artifacts.local.yaml` 中，找到 `mcpServers` 列表里名为 `local-artifacts` 的条目，在其 `env` 中加入 `"LOCAL_KNOWLEDGE_DIR": "D:/my-knowledge"`，再重载 Cursor。相对路径从项目根目录解析。
 
 在 Continue Agent 中先试检索，再试带资料生成：
 
