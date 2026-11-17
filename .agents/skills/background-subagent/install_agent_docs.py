@@ -67,6 +67,12 @@ def digest(data):
     return hashlib.sha256(data).hexdigest()
 
 
+def matches_baseline(data, baseline):
+    """兼容 Git 的 LF/CRLF 转换，保留其他内容的校验保护。"""
+    lf = data.replace(b"\r\n", b"\n")
+    return baseline in {digest(data), digest(lf), digest(lf.replace(b"\n", b"\r\n"))}
+
+
 def safe_path(root, relative):
     """拒绝目标内的符号链接或 Windows junction，保持写入范围可预测。"""
     current = root
@@ -141,6 +147,9 @@ def make_block(base=None):
         f"- 开始或恢复工作时，读取 [文档与目录规范]({base}/documentation.md) 中的多层项目安装与会话交接规则，"
         "再读本目录现有状态入口，核对用户指定的会话角色、职责、活动任务及文件负责人。"
         "未被用户指定时不得自称主会话；缺少交接信息时不编造。文档和目录维护也遵循该规范。\n"
+        f"- 写作、修改正文或实现代码时，遵循 [主旨、文风与必要异常处理规则]({base}/documentation.md)。"
+        "直接表达证据支持的主张，保持作者声音；必要限定就近说明一次。按真实接口和失败场景处理异常，"
+        "避免重复免责声明、无关反驳和假设性兜底。\n"
         f"- 在通过 GitHub 多机接续的项目首次接入或规则变化时，读取 [Git 与多机接续规范]({base}/git-multicomputer-workflow.md)，后续复用并按需查阅。"
         "将代码、必要证据和当前进展在工作过程中写入根仓库可收录的位置，结束前核查本轮增量；"
         "不等用户要求再整理，不把干净状态当作已经同步。沿用一个主分支，Git 暂存、提交和推送默认由用户执行。\n"
@@ -174,9 +183,10 @@ def load_manifest(data):
         return None
     try:
         record = json.loads(data)
-        old_files = {str(SKILL_DIR / name) for name in (*LEGACY_DOCUMENTS, "SKILL.md")}
-        old_with_script = old_files | {str(SKILL_DIR / "install_agent_docs.py")}
-        full_files = old_with_script | {str(SKILL_DIR / "git-multicomputer-workflow.md")}
+        # 清单写入统一使用 POSIX 路径，读取时也须与宿主系统分隔符无关。
+        old_files = {(SKILL_DIR / name).as_posix() for name in (*LEGACY_DOCUMENTS, "SKILL.md")}
+        old_with_script = old_files | {(SKILL_DIR / "install_agent_docs.py").as_posix()}
+        full_files = old_with_script | {(SKILL_DIR / "git-multicomputer-workflow.md").as_posix()}
         inventory = set(record["files"])
         valid = (
             record["package"] == PACKAGE and record["schema"] in (1, 2)
@@ -229,7 +239,7 @@ def install(project, source, dry_run=False, overwrite=False, reference=None):
         old = previous[relative]
         if old is not None and old != data:
             baseline = manifest["files"].get(relative.as_posix()) if manifest else None
-            if digest(old) != baseline:
+            if not matches_baseline(old, baseline):
                 conflicts.append(relative.as_posix())
 
     # 若用户后来启用了 override，将旧入口中的受管块迁到实际生效的入口。
@@ -246,7 +256,7 @@ def install(project, source, dry_run=False, overwrite=False, reference=None):
         if span:
             existing = old[span[0]:span[1]]
             baseline = manifest["block_sha256"] if manifest and manifest["entry_file"] == str(relative) else None
-            if existing != block and digest(existing) != baseline:
+            if existing != block and not matches_baseline(existing, baseline):
                 conflicts.append(f"{relative} 的安装器维护区")
             replacement = block if relative == entry else b""
             desired[relative] = old[:span[0]] + replacement + old[span[1]:]

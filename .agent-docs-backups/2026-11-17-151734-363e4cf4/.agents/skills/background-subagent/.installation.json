@@ -1,0 +1,15 @@
+{
+  "package": "local-agent-guides",
+  "schema": 2,
+  "entry_file": "AGENTS.md",
+  "mode": "full",
+  "block_sha256": "0f3c191c47371b96e9a6b6fb363071b4293a51db6969191b78d0a2ae5f0467fe",
+  "files": {
+    ".agents/skills/background-subagent/codex-subagent-model-selection.md": "d6a7f08189d18cdbae7a1790de23d38b8b7aef370bd190c58ec2551500282db8",
+    ".agents/skills/background-subagent/documentation.md": "9824fcfeaf3b23cca581b2a740006587fa874a629135f7def8b18c7d96fb9577",
+    ".agents/skills/background-subagent/git-multicomputer-workflow.md": "fdda137d49113d50c1766983b63cee81a0500a30bd178ca0229694d969059bec",
+    ".agents/skills/background-subagent/SKILL.md": "d5fa110ae650fe66e469e0f22c896beaf6a2e782796e251fa689cc47f65e8820",
+    ".agents/skills/background-subagent/install_agent_docs.py": "7238afd1d9322daedea62921c5339ada6fa671221a514fe9e2254004ae30c316"
+  },
+  "installed_at_utc": "2026-11-04T07:03:16.751444+00:00"
+}
