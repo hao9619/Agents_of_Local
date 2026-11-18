@@ -57,6 +57,8 @@ END = "<!-- END local-agent-guides -->"
 LEGACY_DOCUMENTS = ("codex-subagent-model-selection.md", "documentation.md")
 DOCUMENTS = (*LEGACY_DOCUMENTS, "git-multicomputer-workflow.md")
 ENTRY_NAMES = ("AGENTS.md", "AGENTS.override.md")
+CLAUDE_ENTRY = Path("CLAUDE.md")
+CLAUDE_SKILL = Path(".claude/skills/background-subagent/SKILL.md")
 
 
 class InstallError(Exception):
@@ -189,13 +191,16 @@ def load_manifest(data):
         full_files = old_with_script | {(SKILL_DIR / "git-multicomputer-workflow.md").as_posix()}
         inventory = set(record["files"])
         valid = (
-            record["package"] == PACKAGE and record["schema"] in (1, 2)
+            record["package"] == PACKAGE and record["schema"] in (1, 2, 3)
             and record["entry_file"] in ENTRY_NAMES
             and (inventory in (old_files, old_with_script, full_files)
-                 or (not inventory and record.get("mode") == "reference" and record["schema"] == 2))
+                 or (not inventory and record.get("mode") == "reference" and record["schema"] in (2, 3)))
             and all(re.fullmatch(r"[0-9a-f]{64}", value)
                     for value in [record["block_sha256"], *record["files"].values()])
         )
+        if record["schema"] == 3:
+            valid = valid and set(record["claude"]) == {"block_sha256", "skill_sha256"} and all(
+                re.fullmatch(r"[0-9a-f]{64}", value) for value in record["claude"].values())
     except (ValueError, KeyError, TypeError, AttributeError):
         valid = False
     if not valid:
@@ -228,7 +233,7 @@ def install(project, source, dry_run=False, overwrite=False, reference=None):
         base = Path(os.path.relpath(Path(reference).resolve() / SKILL_DIR, root)).as_posix()
         desired = {}
     previous = {}
-    for relative in (*desired, MANIFEST, *map(Path, ENTRY_NAMES)):
+    for relative in (*desired, MANIFEST, *map(Path, ENTRY_NAMES), CLAUDE_ENTRY, CLAUDE_SKILL):
         previous[relative] = read_optional(safe_path(root, relative))
     manifest = load_manifest(previous[MANIFEST])
     override = previous[Path("AGENTS.override.md")]
@@ -264,6 +269,41 @@ def install(project, source, dry_run=False, overwrite=False, reference=None):
             separator = b"" if not old or old.endswith(b"\n\n") else b"\n" if old.endswith(b"\n") else b"\n\n"
             desired[relative] = old + separator + block + b"\n"
 
+    # Claude 入口复用有效的 Codex 入口；本地技能仅负责发现与运行环境适配。
+    adaptation = (
+        "在 Claude Code 中，共用规则里的 Codex 指当前执行助手；监督选择同样适用。"
+        "模型、推理强度、工具和后台生命周期以当前 Claude Code 实际能力为准，"
+        "不要调用 Codex 专用工具或照搬其模型名、fork_turns 等参数。"
+        "未确认后台持续执行能力时，不承诺回复结束后仍会运行。\n"
+    )
+    claude_block = (f"{BEGIN}\n@{entry.as_posix()}\n\n" + adaptation + f"{END}").encode("utf-8")
+    old = previous[CLAUDE_ENTRY] or b""
+    old.decode("utf-8-sig")
+    span = block_span(old)
+    claude_record = manifest.get("claude", {}) if manifest else {}
+    if span:
+        existing = old[span[0]:span[1]]
+        if existing != claude_block and not matches_baseline(existing, claude_record.get("block_sha256")):
+            conflicts.append("CLAUDE.md 的安装器维护区")
+        desired[CLAUDE_ENTRY] = old[:span[0]] + claude_block + old[span[1]:]
+    else:
+        separator = b"" if not old or old.endswith(b"\n\n") else b"\n" if old.endswith(b"\n") else b"\n\n"
+        desired[CLAUDE_ENTRY] = old + separator + claude_block + b"\n"
+    provider = Path(reference).resolve() if reference is not None else root
+    skill_target = os.path.relpath(provider / SKILL_DIR / "SKILL.md", root / CLAUDE_SKILL.parent)
+    skill_link = quote(Path(skill_target).as_posix(), safe="/.")
+    claude_skill = (
+        "---\nname: background-subagent\n"
+        "description: Use when the user explicitly requests background execution or asks to inspect, stop, or resume an existing background task.\n"
+        "---\n\n# 后台任务\n\n" + adaptation + "\n"
+        f"执行前读取[共用后台任务规范]({skill_link})，并按该文件所在目录解析其配套文档链接。"
+        "普通前台任务耗时较长不触发后台执行。\n"
+    ).encode("utf-8")
+    old_skill = previous[CLAUDE_SKILL]
+    if old_skill is not None and old_skill != claude_skill and not matches_baseline(old_skill, claude_record.get("skill_sha256")):
+        conflicts.append(CLAUDE_SKILL.as_posix())
+    desired[CLAUDE_SKILL] = claude_skill
+
     if conflicts and not overwrite:
         names = "\n  ".join(conflicts)
         raise InstallError(
@@ -272,7 +312,8 @@ def install(project, source, dry_run=False, overwrite=False, reference=None):
         )
 
     new_record = {
-        "package": PACKAGE, "schema": 2, "entry_file": str(entry),
+        "package": PACKAGE, "schema": 3, "entry_file": str(entry),
+        "claude": {"block_sha256": digest(claude_block), "skill_sha256": digest(claude_skill)},
         "mode": "reference" if reference is not None else "full",
         "block_sha256": digest(block),
         "files": {relative.as_posix(): digest(data) for relative, data in desired.items()
@@ -337,7 +378,8 @@ def install(project, source, dry_run=False, overwrite=False, reference=None):
     print(f"规则模式：{'引用 ' + str(reference) if reference is not None else '完整安装（含子目录安装工具）'}")
     if reference is None:
         print(f"后台技能：{root / SKILL_DIR / 'SKILL.md'}")
-    print("请在目标项目重新开启 Codex 会话。可要求 Agent 列出本项目生效的规则与技能进行核对。")
+    print(f"Claude Code 入口：{root / CLAUDE_ENTRY}；技能：{root / CLAUDE_SKILL}")
+    print("请在目标项目重新开启 Codex 或 Claude Code 会话。可要求 Agent 列出本项目生效的规则与技能进行核对。")
     print("源文档修改后重新运行同一命令即可更新；本次没有修改全局配置或启动后台任务。")
 
 

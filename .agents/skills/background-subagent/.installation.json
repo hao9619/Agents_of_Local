@@ -1,7 +1,11 @@
 {
   "package": "local-agent-guides",
-  "schema": 2,
+  "schema": 3,
   "entry_file": "AGENTS.md",
+  "claude": {
+    "block_sha256": "a82df13eb90f18e1ab21bfa6d512dac0110341de1430355f9b3530f3c8270986",
+    "skill_sha256": "412cc270a9d66417872d85a9bff6050c4c69eaec360f0cf621a9e7f7372824dc"
+  },
   "mode": "full",
   "block_sha256": "71bfa4212e770ee1abeff309b56c666aa6a5066ea4e17f56393aec16c19ba36d",
   "files": {
@@ -9,7 +13,7 @@
     ".agents/skills/background-subagent/documentation.md": "eb616782be946c2bf15bdb1b561daf6883c0e6f3de90a80e09c1d7c3c45c8dc6",
     ".agents/skills/background-subagent/git-multicomputer-workflow.md": "fdda137d49113d50c1766983b63cee81a0500a30bd178ca0229694d969059bec",
     ".agents/skills/background-subagent/SKILL.md": "d5fa110ae650fe66e469e0f22c896beaf6a2e782796e251fa689cc47f65e8820",
-    ".agents/skills/background-subagent/install_agent_docs.py": "4c712917a59831074a8e1bc7d2dd0d0ee6089f98faa2fa3438eb123a7866b23c"
+    ".agents/skills/background-subagent/install_agent_docs.py": "1b3a57eb9fcd3c690f38cd0fadc4c43e8403083f951b60985a68a53459342213"
   },
-  "installed_at_utc": "2026-11-17T15:17:34.233629+00:00"
+  "installed_at_utc": "2026-11-18T01:23:39.458077+00:00"
 }
