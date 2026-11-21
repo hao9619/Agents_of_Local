@@ -7,13 +7,13 @@
     "skill_sha256": "412cc270a9d66417872d85a9bff6050c4c69eaec360f0cf621a9e7f7372824dc"
   },
   "mode": "full",
-  "block_sha256": "71bfa4212e770ee1abeff309b56c666aa6a5066ea4e17f56393aec16c19ba36d",
+  "block_sha256": "ad8e5b438994e795310cf80239ef6b90b1b046bc4743497618355e40ab395981",
   "files": {
     ".agents/skills/background-subagent/codex-subagent-model-selection.md": "5f7492ba9a8fedcfb3f09791f99703d97d20313d2d49211f447b1a85dde8b6df",
-    ".agents/skills/background-subagent/documentation.md": "eb616782be946c2bf15bdb1b561daf6883c0e6f3de90a80e09c1d7c3c45c8dc6",
+    ".agents/skills/background-subagent/documentation.md": "3d5c6113ee6662a8bc33f2e394a0a8131e4a64ed12d4ae6ca0a4ed990b307a2c",
     ".agents/skills/background-subagent/git-multicomputer-workflow.md": "fdda137d49113d50c1766983b63cee81a0500a30bd178ca0229694d969059bec",
     ".agents/skills/background-subagent/SKILL.md": "d5fa110ae650fe66e469e0f22c896beaf6a2e782796e251fa689cc47f65e8820",
-    ".agents/skills/background-subagent/install_agent_docs.py": "1b3a57eb9fcd3c690f38cd0fadc4c43e8403083f951b60985a68a53459342213"
+    ".agents/skills/background-subagent/install_agent_docs.py": "865d02304d48fdd1cabfa1b50db8023fb0746cda07cd2d9bf4bea5a139419eb5"
   },
-  "installed_at_utc": "2026-11-18T01:23:39.458077+00:00"
+  "installed_at_utc": "2026-11-21T10:26:21.681431+00:00"
 }
